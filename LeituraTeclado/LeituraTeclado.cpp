@@ -2,19 +2,82 @@
 //
 
 #include <iostream>
+#include <windows.h>
+#include <conio.h>
+#include "LeituraTeclado.h"
+
+using namespace std;
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	system("cls");
+	bool l = false, p = false, r = false, s = false, e = false; //Trocar variavel por metodo BuscarStatus() das classes
+	char instrucao;
+	while (true) {
+		GerarDashboard(l, p, r, s, e); 
+		cout << "Insira uma instrucao: ";
+		instrucao = _getch();
+		ExecutarInstrucao(instrucao, l, p, r, s, e);
+		Sleep(1000);
+		system("cls");
+	}
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+void ExecutarInstrucao(char instrucao, bool& l, bool& p, bool& r, bool& s, bool& e)
+{
+	switch (tolower(instrucao)) {
+	case ('l'):
+		//LeituraSupervisorio.AlterarStatus();
+		l = !l;
+		break;
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+	case ('p'):
+		//LeituraPCP.AlterarStatus();
+		p = !p;
+		break;
+
+	case ('r'):
+		//CapturaMensagens.AlterarStatus();
+		r = !r;
+		break;
+
+	case ('s'):
+		//DadosProcesso.AlterarStatus();
+		s = !s;
+		break;
+
+	case ('e'):
+		//GestaoProducao.AlterarStatus();
+		e = !e;
+		break;
+
+	case ('1'):
+		//DadosProcesso.LimparConsole();
+		cout << "1";
+		break;
+
+	case ('2'):
+		//GestaoProducao.LimparConsole();
+		cout << "2";
+		break;
+
+	case (27):
+		//FecharTudo();
+		cout << "esc";
+		break;
+	default:
+		break;
+	}
+}
+
+void GerarDashboard(bool l, bool p, bool r, bool s, bool e)
+{
+	cout << "Instrucao 'l' - Leitura do Supervisorio \tStatus: " << l << " \n";
+	cout << "Instrucao 'p' - Leitura do PCP \tStatus: " << p << " \n";
+	cout << "Instrucao 'r' - CapturaMensagens \tStatus: " << r << " \n";
+	cout << "Instrucao 's' - DadosProcesso \tStatus: " << s << " \n";
+	cout << "Instrucao 'e' - GestaoProducao \tStatus: " << e << " \n";
+	cout << "Instrucao '1' - Limpar console DadosProcesso\n";
+	cout << "Instrucao '2' - Limpar console GestaoProducao\n";
+	cout << "Instrucao 'esc' - Encerrar processos\n";
+}
