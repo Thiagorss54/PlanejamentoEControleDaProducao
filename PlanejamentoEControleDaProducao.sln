@@ -6,6 +6,11 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlanejamentoEControleDaProducao", "PlanejamentoEControleDaProducao\PlanejamentoEControleDaProducao.vcxproj", "{7F95DFD1-C816-4B41-A847-B8C5DB356602}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeituraTeclado", "LeituraTeclado\LeituraTeclado.vcxproj", "{B55D740E-A48C-4A48-8860-9D3A1A3EBBA8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A7F55B4C-B5E7-4203-887F-6469A6D3CD72} = {A7F55B4C-B5E7-4203-887F-6469A6D3CD72}
+		{40F75B96-B977-4393-9DD7-DC49E3354C4F} = {40F75B96-B977-4393-9DD7-DC49E3354C4F}
+		{7F95DFD1-C816-4B41-A847-B8C5DB356602} = {7F95DFD1-C816-4B41-A847-B8C5DB356602}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GestaoProducao", "GestaoProducao\GestaoProducao.vcxproj", "{A7F55B4C-B5E7-4203-887F-6469A6D3CD72}"
 EndProject
