@@ -144,6 +144,11 @@
   <ItemGroup>
     <ClInclude Include="LeituraTeclado.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LeituraSupervisorio\LeituraSupervisorio.vcxproj">
+      <Project>{1febe633-4363-49dd-8c06-bb3ac5b8b89a}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
