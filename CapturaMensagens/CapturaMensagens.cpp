@@ -12,3 +12,9 @@
 //   4. Use a janela Lista de Erros para exibir erros
 //   5. Ir Para o Projeto > Adicionar Novo Item para criar novos arquivos de código, ou Projeto > Adicionar Item Existente para adicionar arquivos de código existentes ao projeto
 //   6. No futuro, para abrir este projeto novamente, vá para Arquivo > Abrir > Projeto e selecione o arquivo. sln
+
+int main() {
+
+
+	return 0;
+}
