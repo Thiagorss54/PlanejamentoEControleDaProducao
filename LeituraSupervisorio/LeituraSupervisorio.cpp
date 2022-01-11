@@ -1,6 +1,3 @@
-// LeituraSupervisorio.cpp : Este arquivo contém a função 'main'. A execução do programa começa e termina ali.
-//
-
 #include "LeituraSupervisorio.h"
 #include "FuncoesAuxiliares.h"
 
@@ -51,11 +48,9 @@ void LeituraSupervisorio::LerMensagem() {
     std::stringstream mensagem;
 
     mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9),5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::GetHorario();
-    Sleep(500);
-
-
     std::cout << mensagem.str() << std::endl;
 
+    Sleep(500);
 
     nseq++;
 }
