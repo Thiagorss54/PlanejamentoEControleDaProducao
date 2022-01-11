@@ -22,11 +22,7 @@ public:
 	void AlterarStatus();
 	bool GetStatus();
 	void LerMensagem(); //simula a leitura através da geração de dados	
-	std::string GetHorario();
-	std::string Formatar(int valor,const int tamanho);
-	std::string Formatar(float valor, const int tamanho);
-	float ValorAleatorio(float max);
-	
+
 };
 
 

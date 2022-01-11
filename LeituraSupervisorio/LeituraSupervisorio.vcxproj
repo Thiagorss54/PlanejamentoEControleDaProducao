@@ -142,6 +142,7 @@
     <ClCompile Include="LeituraSupervisorio.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FuncoesAuxiliares.h" />
     <ClInclude Include="LeituraSupervisorio.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
