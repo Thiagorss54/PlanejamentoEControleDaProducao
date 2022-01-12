@@ -5,10 +5,14 @@
 #include <windows.h>
 #include <conio.h>
 #include "../LeituraSupervisorio/LeituraSupervisorio.h"
+#include "../LeituraPCP/LeituraPCP.h"
 
 using namespace std;
 
-void ExecutarInstrucao(char instrucao, LeituraSupervisorio *leituraSupervisorio, bool& p, bool& r, bool& s, bool& e)
+void ExecutarInstrucao(char instrucao, 
+						LeituraSupervisorio *leituraSupervisorio, 
+						LeituraPCP *leituraPCP, 
+						bool& r, bool& s, bool& e)
 {
 	switch (tolower(instrucao)) {
 	case ('l'):
@@ -16,7 +20,7 @@ void ExecutarInstrucao(char instrucao, LeituraSupervisorio *leituraSupervisorio,
 		break;
 
 	case ('p'):
-		//leituraPCP->AlterarStatus();
+		leituraPCP->AlterarStatus();
 		break;
 
 	case ('r'):
@@ -48,10 +52,12 @@ void ExecutarInstrucao(char instrucao, LeituraSupervisorio *leituraSupervisorio,
 	}
 }
 
-void GerarDashboard(LeituraSupervisorio *leituraSupervisorio, bool p, bool r, bool s, bool e)
+void GerarDashboard(LeituraSupervisorio *leituraSupervisorio, 
+					LeituraPCP* leituraPCP, 
+					bool r, bool s, bool e)
 {
 	cout << "Instrucao 'l' - Leitura do Supervisorio \tStatus: " << leituraSupervisorio->GetStatus() << " \n";
-	cout << "Instrucao 'p' - Leitura do PCP \tStatus: " << p << " \n"; //leituraPCP->GetStatus()
+	cout << "Instrucao 'p' - Leitura do PCP \tStatus: " << leituraPCP->GetStatus() << " \n";
 	cout << "Instrucao 'r' - CapturaMensagens \tStatus: " << r << " \n"; //capturaMensagens->GetStatus()
 	cout << "Instrucao 's' - DadosProcesso \tStatus: " << s << " \n"; //dadosProcesso->GetStatus()
 	cout << "Instrucao 'e' - GestaoProducao \tStatus: " << e << " \n"; //gestaoProducao->GetStatus()
@@ -63,15 +69,17 @@ void GerarDashboard(LeituraSupervisorio *leituraSupervisorio, bool p, bool r, bo
 int main()
 {
 	system("cls");
+	//Lista
 	LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio();
-	bool l = false, p = false, r = false, s = false, e = false; //Trocar variavel por metodo BuscarStatus() das classes
+	LeituraPCP* leituraPCP = new LeituraPCP();
+	bool r = false, s = false, e = false;
 	char instrucao;
 	while (true) {
-		GerarDashboard(leituraSupervisorio, p, r, s, e);
+		GerarDashboard(leituraSupervisorio, leituraPCP, r, s, e);
 		cout << "Insira uma instrucao: ";
 		instrucao = _getch();
 		std::cout << instrucao;
-		ExecutarInstrucao(instrucao, leituraSupervisorio, p, r, s, e);
+		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, r, s, e);
 		Sleep(1000);
 		system("cls");
 	}

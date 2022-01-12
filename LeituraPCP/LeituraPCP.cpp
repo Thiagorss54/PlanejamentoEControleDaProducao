@@ -1,5 +1,5 @@
 #include "LeituraPCP.h"
-#include "FuncoesAuxiliares.h"
+#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 #include <iostream>
 #include <sstream>
@@ -63,10 +63,10 @@ char LeituraPCP::charAleatorio()
 	return result;
 }
 
-int main() {
-	LeituraPCP* leituraPCP = new LeituraPCP();
-	for (int i = 0; i < 100; ++i) {
-		leituraPCP->LerMensagem();
-	}
-	return 0;
-}
+//int main() {
+//	LeituraPCP* leituraPCP = new LeituraPCP();
+//	for (int i = 0; i < 100; ++i) {
+//		leituraPCP->LerMensagem();
+//	}
+//	return 0;
+//}

@@ -142,9 +142,9 @@
     <ClCompile Include="LeituraTeclado.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="LeituraTeclado.h" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\LeituraPCP\LeituraPCP.vcxproj">
+      <Project>{7504c1bb-66cf-43d2-adc5-b22060cf66f3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\LeituraSupervisorio\LeituraSupervisorio.vcxproj">
       <Project>{1febe633-4363-49dd-8c06-bb3ac5b8b89a}</Project>
     </ProjectReference>

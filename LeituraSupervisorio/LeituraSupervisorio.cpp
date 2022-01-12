@@ -1,5 +1,5 @@
 #include "LeituraSupervisorio.h"
-#include "FuncoesAuxiliares.h"
+#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 #include <iostream>
 #include <string>
@@ -47,7 +47,13 @@ void LeituraSupervisorio::LerMensagem() {
    
     std::stringstream mensagem;
 
-    mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9),5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9), 5) << "#" << FuncoesAuxiliares::GetHorario();
+    mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5)
+                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f),5) 
+                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
+                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
+                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
+                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
+                     << "#" << FuncoesAuxiliares::GetHorario();
     std::cout << mensagem.str() << std::endl;
 
     Sleep(500);
@@ -56,10 +62,10 @@ void LeituraSupervisorio::LerMensagem() {
 }
 
 
-int main() {
-    LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio();
-    for (int i = 0; i < 100; ++i) {
-        leituraSupervisorio->LerMensagem();
-    }
-    return 0;
-}
+//int main() {
+//    LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio();
+//    for (int i = 0; i < 100; ++i) {
+//        leituraSupervisorio->LerMensagem();
+//    }
+//    return 0;
+//}
