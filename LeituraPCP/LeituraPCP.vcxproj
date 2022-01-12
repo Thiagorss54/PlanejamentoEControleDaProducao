@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -145,9 +145,6 @@
     <ClCompile Include="LeituraPCP.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\LeituraSupervisorio\LeituraSupervisorio.vcxproj">
-      <Project>{1febe633-4363-49dd-8c06-bb3ac5b8b89a}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\PlanejamentoEControleDaProducao\PlanejamentoEControleDaProducao.vcxproj">
       <Project>{7f95dfd1-c816-4b41-a847-b8c5db356602}</Project>
     </ProjectReference>

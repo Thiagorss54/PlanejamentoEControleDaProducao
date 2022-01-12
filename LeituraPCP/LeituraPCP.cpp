@@ -29,9 +29,9 @@ void LeituraPCP::LerMensagem()
 	std::stringstream mensagem;
 
 	mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5) << "#" << GerarOperacao() << "#" << GerarHora() << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(99999), 5);
-	std::cout << mensagem.str() <<"  " << mensagem.str().size() << std::endl;
+	std::cout << mensagem.str() << std::endl;
 
-	Sleep(500);
+	Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
 
 	nseq++;
 }
