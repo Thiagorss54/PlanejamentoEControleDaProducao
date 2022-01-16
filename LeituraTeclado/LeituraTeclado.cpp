@@ -7,13 +7,11 @@
 #include <stdlib.h>
 #include <process.h>
 #include <conio.h>
-#include <pthread.h>
-#include <semaphore.h>
 
 #include "../LeituraSupervisorio/LeituraSupervisorio.h"
 #include "../LeituraPCP/LeituraPCP.h"
 
-using namespace std;
+
 
 #define _CHECKERROR 1
 #include "CheckForError.h"
@@ -29,10 +27,9 @@ typedef unsigned* CAST_LPDWORD;
 #define	ESC 0x1B			// Tecla para encerrar o programa
 
 
-DWORD WINAPI ThreadLeituraSupervisorio(LeituraSupervisorio* leituraSupervisorio);
-DWORD WINAPI ThreadLeituraPCP(LeituraPCP* leituraPCP);
-DWORD WINAPI ThreadTeclado(LeituraSupervisorio* leituraSupervisorio,
-						   LeituraPCP* leituraPCP);
+DWORD WINAPI ThreadLeituraSupervisorio();
+DWORD WINAPI ThreadLeituraPCP();
+DWORD WINAPI ThreadTeclado();
 DWORD WINAPI ThreadRetirarMensagem();	// Thread representando a retirada de mensagem
 
 void ExecutarInstrucao(char instrucao,
@@ -52,13 +49,13 @@ HANDLE hOut;						// Handle para a saída da console
 char instrucao;
 LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio();
 LeituraPCP* leituraPCP = new LeituraPCP();
-
-
+bool r = false, s = false, e = false;
+using namespace std;
 // THREAD PRIMÁRIA
 int main()
 {
 	HANDLE hThreads[4];       // Leitura PCP, Leitura S
-	DWORD dwIdSupervisorio, dwIdPCP, dwIdRetiraMsg;
+	DWORD dwIdTelcado, dwIdSupervisorio, dwIdPCP, dwIdRetiraMsg;
 	DWORD dwExitCode = 0;
 	DWORD dwRet;
 
@@ -73,72 +70,72 @@ int main()
 	hThreads[0] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadLeituraSupervisorio(leituraSupervisorio),	//Casting necessário
+		(CAST_FUNCTION)ThreadTeclado,	//Casting necessário
 		(LPVOID)(INT_PTR)0,
 		0,
-		(CAST_LPDWORD)&dwIdSupervisorio);		//Casting necessário
+		(CAST_LPDWORD)&dwIdTelcado);		//Casting necessário
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[0] != (HANDLE)-1L)
-		printf("Thread Leitura Supervisorio  %d criada com Id=%0x\n", 0, dwIdSupervisorio);
+		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 0, dwIdTelcado);
 	else {
-		printf("Erro na criacao da thread Leitura Supervisorio ! N = %d Erro = %d\n", 0, errno);
+		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 2, errno);
 		exit(0);
 	}
 
 	hThreads[1] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadLeituraPCP(leituraPCP),	//Casting necessário
+		(CAST_FUNCTION)ThreadLeituraSupervisorio,	//Casting necessário
 		(LPVOID)(INT_PTR)1,
 		0,
-		(CAST_LPDWORD)&dwIdPCP);		//Casting necessário
+		(CAST_LPDWORD)&dwIdSupervisorio);		//Casting necessário
 	SetConsoleTextAttribute(hOut, WHITE);
-	if (hThreads[0] != (HANDLE)-1L)
-		printf("Thread Leitura PCP  %d criada com Id=%0x\n", 1, dwIdPCP);
+	if (hThreads[1] != (HANDLE)-1L)
+		printf("Thread Leitura Supervisorio  %d criada com Id=%0x\n", 1, dwIdSupervisorio);
 	else {
-		printf("Erro na criacao da thread LeituraPCP! N = %d Erro = %d\n", 1, errno);
+		printf("Erro na criacao da thread Leitura Supervisorio ! N = %d Erro = %d\n", 1, errno);
 		exit(0);
 	}
 
 	hThreads[2] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadRetirarMensagem,	//Casting necessário
+		(CAST_FUNCTION)ThreadLeituraPCP,	//Casting necessário
 		(LPVOID)(INT_PTR)2,
 		0,
-		(CAST_LPDWORD)&dwIdRetiraMsg);		//Casting necessário
+		(CAST_LPDWORD)&dwIdPCP);		//Casting necessário
 	SetConsoleTextAttribute(hOut, WHITE);
-	if (hThreads[0] != (HANDLE)-1L)
-		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 2, dwIdPCP);
+	if (hThreads[2] != (HANDLE)-1L)
+		printf("Thread Leitura PCP  %d criada com Id=%0x\n", 2, dwIdPCP);
 	else {
-		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 2, errno);
+		printf("Erro na criacao da thread LeituraPCP! N = %d Erro = %d\n", 2, errno);
 		exit(0);
 	}
 
 	hThreads[3] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadTeclado(leituraSupervisorio, leituraPCP),	//Casting necessário
-		(LPVOID)(INT_PTR)2,
+		(CAST_FUNCTION)ThreadRetirarMensagem,	//Casting necessário
+		(LPVOID)(INT_PTR)3,
 		0,
 		(CAST_LPDWORD)&dwIdRetiraMsg);		//Casting necessário
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[0] != (HANDLE)-1L)
-		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 2, dwIdPCP);
+		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 3, dwIdPCP);
 	else {
-		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 2, errno);
+		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 3, errno);
 		exit(0);
 	}
+
 	//Lista
-	
-	
-	
+	bool r = false, s = false, e = false;
 	do {
-		
+		instrucao = _getch();
+		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, r, s, e);
 	} while (instrucao != ESC);
 
 	// Aguarda término das threads homens e mulheres
-	dwRet = WaitForMultipleObjects(3, hThreads, TRUE, INFINITE);
+	dwRet = WaitForMultipleObjects(4, hThreads, TRUE, INFINITE);
 	//CheckForError(dwRet == WAIT_OBJECT_0);
 
 	// Fecha todos os handles de objetos do kernel
@@ -203,41 +200,47 @@ void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	cout << "Instrucao '2' - Limpar console GestaoProducao\n"; //gestaoProducao->GetStatus()
 	cout << "Instrucao 'esc' - Encerrar processos\n";
 }
-DWORD WINAPI ThreadTeclado(LeituraSupervisorio* leituraSupervisorio, LeituraPCP* leituraPCP) {
+DWORD WINAPI ThreadTeclado() {
 	DWORD dwStatus;
 	BOOL bStatus;
-	bool r = false, s = false, e = false;
+
 	do {
 		GerarDashboard(leituraSupervisorio, leituraPCP, r, s, e);
-		cout << "Insira uma instrucao: ";
-		instrucao = _getch();
-		cout << instrucao;
-		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, r, s, e);
-		Sleep(1000);
+		Sleep(60000);
 		system("cls");
 	} while (instrucao != ESC);
 	return 0;
 }
 
-DWORD WINAPI ThreadLeituraSupervisorio(LeituraSupervisorio* leituraSupervisorio) {
+DWORD WINAPI ThreadLeituraSupervisorio() {
 	DWORD dwStatus;
 	BOOL bStatus;
 
 	do {
+		WaitForSingleObject(hListaLivre, 0L);
 		if (leituraSupervisorio->GetStatus()) {
+			cout << "Inicio" << endl;
 			leituraSupervisorio->LerMensagem();
+			cout << "Fim" << endl;
 		}
+		ReleaseSemaphore(hListaLivre, 1, NULL);
 
 	} while (instrucao != ESC);
 	return 0;
 }
 
-DWORD WINAPI ThreadLeituraPCP(LeituraPCP* leituraPCP) {
+DWORD WINAPI ThreadLeituraPCP() {
 	DWORD dwStatus;
 	BOOL bStatus;
 
 	do {
-
+		WaitForSingleObject(hListaLivre, 0L);
+		if (leituraPCP->GetStatus()) {
+			cout << "Inicio" << endl;
+			leituraPCP->LerMensagem();
+			cout << "Fim" << endl;
+		}
+		ReleaseSemaphore(hListaLivre, 1, NULL);
 	} while (instrucao != ESC);
 	return 0;
 }
@@ -247,7 +250,7 @@ DWORD WINAPI ThreadRetirarMensagem() {
 	BOOL bStatus;
 
 	do {
-		
+
 
 	} while (instrucao != ESC);
 	return 0;
