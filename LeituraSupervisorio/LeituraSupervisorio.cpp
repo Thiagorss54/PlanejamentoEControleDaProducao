@@ -1,5 +1,6 @@
 #include "LeituraSupervisorio.h"
 #include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
+#include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
 
 #include <iostream>
 #include <string>
@@ -13,52 +14,55 @@
 
 
 std::vector<std::string> SepararString(std::string mensagem, std::string delimitador) {
-    std::vector<std::string> resultado;
+	std::vector<std::string> resultado;
 
-    unsigned inicio = 0U;
-    auto fim = mensagem.find(delimitador);
+	unsigned inicio = 0U;
+	auto fim = mensagem.find(delimitador);
 
-    while (fim != std::string::npos) {
-        std::cout << mensagem.substr(inicio, fim - inicio) << std::endl;
-        resultado.push_back(mensagem.substr(inicio, fim - inicio));
-        inicio = (int)(fim + delimitador.length());
-        fim = mensagem.find(delimitador, inicio);
-    }
+	while (fim != std::string::npos) {
+		std::cout << mensagem.substr(inicio, fim - inicio) << std::endl;
+		resultado.push_back(mensagem.substr(inicio, fim - inicio));
+		inicio = (int)(fim + delimitador.length());
+		fim = mensagem.find(delimitador, inicio);
+	}
 
-    return resultado;
+	return resultado;
 }
 
 
-LeituraSupervisorio::LeituraSupervisorio() {
-    //srand(time(NULL));
-    status = false;
-    nseq = 1;
+LeituraSupervisorio::LeituraSupervisorio(ListaEncadeada* listaEncadeada_) :listaEncadeada(listaEncadeada_) {
+	//srand(time(NULL));
+	status = false;
+	nseq = 1;
 }
 
 void LeituraSupervisorio::AlterarStatus() {
-    status = !status;
+	status = !status;
 }
 
 bool LeituraSupervisorio::GetStatus() {
-    return status;
+	return status;
 }
 
 void LeituraSupervisorio::LerMensagem() {
-   
-    std::stringstream mensagem;
 
-    mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5)
-                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f),5) 
-                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
-                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
-                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
-                     << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5) 
-                     << "#" << FuncoesAuxiliares::GetHorario();
-    std::cout << mensagem.str() << std::endl;
+	std::stringstream mensagem;
 
-    Sleep(1000);
+	mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5)
+		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+		<< "#" << FuncoesAuxiliares::GetHorario();
 
-    nseq++;
+
+	listaEncadeada->Inserir(mensagem.str());
+	//std::cout << mensagem.str() << std::endl;
+
+	Sleep(1000);
+
+	nseq++;
 }
 
 

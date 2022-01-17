@@ -7,7 +7,7 @@
 
 #define TIPO 0
 
-LeituraPCP::LeituraPCP()
+LeituraPCP::LeituraPCP(ListaEncadeada* listaEncadeada_):listaEncadeada(listaEncadeada_)
 {
 	//srand(time(NULL));
 	status = false;
@@ -29,7 +29,9 @@ void LeituraPCP::LerMensagem()
 	std::stringstream mensagem;
 
 	mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5) << "#" << GerarOperacao() << "#" << GerarHora() << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(99999), 5);
-	std::cout << mensagem.str() << std::endl;
+	
+	listaEncadeada->Inserir(mensagem.str());
+	//std::cout << mensagem.str() << std::endl;
 
 	//Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
 	Sleep(5000);
