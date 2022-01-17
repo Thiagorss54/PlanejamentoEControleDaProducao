@@ -21,9 +21,15 @@
     <ClCompile Include="FuncoesAuxiliares.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ListaEncadeada.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ListaEncadeada.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
