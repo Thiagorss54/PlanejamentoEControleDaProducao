@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
+
 struct Mensagem
 {
 	int tipo;
@@ -16,9 +18,10 @@ class LeituraSupervisorio {
 private:
 	bool status;
 	int nseq;
+	ListaEncadeada* listaEncadeada;
 
 public:
-	LeituraSupervisorio();
+	LeituraSupervisorio(ListaEncadeada * listaEncadeada_);
 	void AlterarStatus();
 	bool GetStatus();
 	void LerMensagem(); //simula a leitura através da geração de dados	

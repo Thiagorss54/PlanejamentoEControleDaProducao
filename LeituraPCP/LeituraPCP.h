@@ -1,15 +1,17 @@
 #pragma once
 
 #include <string>
+#include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
 
 class LeituraPCP
 {
 private:
 	bool status;
 	int nseq;
+	ListaEncadeada* listaEncadeada;
 
 public:
-	LeituraPCP();
+	LeituraPCP(ListaEncadeada* listaEncadeada_);
 	void AlterarStatus();
 	bool GetStatus();
 	void LerMensagem(); //simula a leitura através da geração de dados	

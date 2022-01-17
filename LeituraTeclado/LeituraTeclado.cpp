@@ -10,6 +10,7 @@
 
 #include "../LeituraSupervisorio/LeituraSupervisorio.h"
 #include "../LeituraPCP/LeituraPCP.h"
+#include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
 
 
 
@@ -46,9 +47,10 @@ HANDLE hAguardaTeclado;	// Permite acesso exclusivo à alterações no teclado
 HANDLE hListaLivre;		// Semáforo para indicar que a lista circular está livre
 HANDLE hOut;						// Handle para a saída da console
 
-char instrucao;
-LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio();
-LeituraPCP* leituraPCP = new LeituraPCP();
+char instrucao; 
+ListaEncadeada* lista1 = new ListaEncadeada(100);
+LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio(lista1);
+LeituraPCP* leituraPCP = new LeituraPCP(lista1);
 bool r = false, s = false, e = false;
 using namespace std;
 // THREAD PRIMÁRIA
@@ -76,9 +78,9 @@ int main()
 		(CAST_LPDWORD)&dwIdTelcado);		//Casting necessário
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[0] != (HANDLE)-1L)
-		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 0, dwIdTelcado);
+		printf("Thread Teclado  %d criada com Id=%0x\n", 0, dwIdTelcado);
 	else {
-		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 2, errno);
+		printf("Erro na criacao da thread Teclado ! N = %d Erro = %d\n", 2, errno);
 		exit(0);
 	}
 
@@ -120,8 +122,8 @@ int main()
 		0,
 		(CAST_LPDWORD)&dwIdRetiraMsg);		//Casting necessário
 	SetConsoleTextAttribute(hOut, WHITE);
-	if (hThreads[0] != (HANDLE)-1L)
-		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 3, dwIdPCP);
+	if (hThreads[3] != (HANDLE)-1L)
+		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 3, dwIdRetiraMsg);
 	else {
 		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 3, errno);
 		exit(0);
@@ -221,9 +223,10 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 	do {
 		if (leituraSupervisorio->GetStatus()) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			cout << "Inicio" << endl;
+			SetConsoleTextAttribute(hOut, HLRED);
+			//cout << "Inicio" << endl;
 			leituraSupervisorio->LerMensagem();
-			cout << "Fim" << endl;
+			//cout << "Fim" << endl;
 			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
 
@@ -238,10 +241,12 @@ DWORD WINAPI ThreadLeituraPCP() {
 	do {
 		if (leituraPCP->GetStatus()) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			cout << "Inicio" << endl;
+			SetConsoleTextAttribute(hOut, HLGREEN);
+			//cout << "Inicio" << endl;
 			leituraPCP->LerMensagem();
-			cout << "Fim" << endl;
+			//cout << "Fim" << endl;
 			ReleaseSemaphore(hListaLivre, 1, NULL);
+			
 		}
 	} while (instrucao != ESC);
 	return 0;
