@@ -56,7 +56,7 @@ void LeituraSupervisorio::LerMensagem() {
                      << "#" << FuncoesAuxiliares::GetHorario();
     std::cout << mensagem.str() << std::endl;
 
-    Sleep(500);
+    Sleep(1000);
 
     nseq++;
 }
