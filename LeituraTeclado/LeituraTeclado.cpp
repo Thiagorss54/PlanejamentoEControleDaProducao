@@ -217,13 +217,13 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 	BOOL bStatus;
 
 	do {
-		WaitForSingleObject(hListaLivre, 0L);
 		if (leituraSupervisorio->GetStatus()) {
+			WaitForSingleObject(hListaLivre, 0L);
 			cout << "Inicio" << endl;
 			leituraSupervisorio->LerMensagem();
 			cout << "Fim" << endl;
+			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
-		ReleaseSemaphore(hListaLivre, 1, NULL);
 
 	} while (instrucao != ESC);
 	return 0;
@@ -234,13 +234,13 @@ DWORD WINAPI ThreadLeituraPCP() {
 	BOOL bStatus;
 
 	do {
-		WaitForSingleObject(hListaLivre, 0L);
 		if (leituraPCP->GetStatus()) {
+			WaitForSingleObject(hListaLivre, 0L);
 			cout << "Inicio" << endl;
 			leituraPCP->LerMensagem();
 			cout << "Fim" << endl;
+			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
-		ReleaseSemaphore(hListaLivre, 1, NULL);
 	} while (instrucao != ESC);
 	return 0;
 }
