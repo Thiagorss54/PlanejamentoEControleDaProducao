@@ -60,7 +60,7 @@ int main()
 	DWORD dwRet;
 
 	hAguardaTeclado = CreateMutex(NULL, FALSE, (LPCWSTR)"AguardaTeclado");
-	hListaLivre = CreateSemaphore(NULL, 0, 1, (LPCWSTR)"ListaLivre");
+	hListaLivre = CreateSemaphore(NULL, 1, 1, (LPCWSTR)"ListaLivre");
 
 	// Obtém um handle para a saída da console
 	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -143,6 +143,8 @@ int main()
 		CloseHandle(hThreads[i]);
 
 	// Fecha os handles dos objetos de sincronização
+	CloseHandle(hAguardaTeclado);
+	CloseHandle(hListaLivre);
 	// [INSIRA AQUI AS CHAMADAS DE FECHAMENTO DE HANDLES]
 
 	return EXIT_SUCCESS;
@@ -218,7 +220,7 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 
 	do {
 		if (leituraSupervisorio->GetStatus()) {
-			WaitForSingleObject(hListaLivre, 0L);
+			WaitForSingleObject(hListaLivre, INFINITE);
 			cout << "Inicio" << endl;
 			leituraSupervisorio->LerMensagem();
 			cout << "Fim" << endl;
@@ -235,7 +237,7 @@ DWORD WINAPI ThreadLeituraPCP() {
 
 	do {
 		if (leituraPCP->GetStatus()) {
-			WaitForSingleObject(hListaLivre, 0L);
+			WaitForSingleObject(hListaLivre, INFINITE);
 			cout << "Inicio" << endl;
 			leituraPCP->LerMensagem();
 			cout << "Fim" << endl;
