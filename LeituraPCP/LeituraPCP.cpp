@@ -32,7 +32,7 @@ void LeituraPCP::LerMensagem()
 	std::cout << mensagem.str() << std::endl;
 
 	//Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
-	Sleep(3000);
+	Sleep(5000);
 	nseq++;
 }
 
