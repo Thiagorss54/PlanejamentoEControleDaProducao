@@ -140,11 +140,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FuncoesAuxiliares.cpp" />
+    <ClCompile Include="LeituraPCP.cpp" />
+    <ClCompile Include="LeituraSupervisorio.cpp" />
     <ClCompile Include="ListaEncadeada.cpp" />
     <ClCompile Include="PlanejamentoEControleDaProducao.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h" />
+    <ClInclude Include="LeituraPCP.h" />
+    <ClInclude Include="LeituraSupervisorio.h" />
     <ClInclude Include="ListaEncadeada.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

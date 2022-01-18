@@ -24,12 +24,24 @@
     <ClCompile Include="ListaEncadeada.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LeituraPCP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LeituraSupervisorio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ListaEncadeada.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LeituraPCP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LeituraSupervisorio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

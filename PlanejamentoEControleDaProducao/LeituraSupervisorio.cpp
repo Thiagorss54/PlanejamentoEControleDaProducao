@@ -1,6 +1,6 @@
 #include "LeituraSupervisorio.h"
-#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
-#include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
+#include "FuncoesAuxiliares.h"
+#include "ListaEncadeada.h"
 
 #include <iostream>
 #include <string>
