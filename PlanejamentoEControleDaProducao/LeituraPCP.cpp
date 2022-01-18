@@ -1,5 +1,6 @@
 #include "LeituraPCP.h"
-#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
+#include "LeituraPCP.h"
+#include "FuncoesAuxiliares.h"
 
 #include <iostream>
 #include <sstream>
@@ -7,7 +8,7 @@
 
 #define TIPO 0
 
-LeituraPCP::LeituraPCP(ListaEncadeada* listaEncadeada_):listaEncadeada(listaEncadeada_)
+LeituraPCP::LeituraPCP(ListaEncadeada* listaEncadeada_) :listaEncadeada(listaEncadeada_)
 {
 	//srand(time(NULL));
 	status = false;
@@ -16,7 +17,7 @@ LeituraPCP::LeituraPCP(ListaEncadeada* listaEncadeada_):listaEncadeada(listaEnca
 
 void LeituraPCP::AlterarStatus()
 {
-	status =! status;
+	status = !status;
 }
 
 bool LeituraPCP::GetStatus()
@@ -29,19 +30,19 @@ void LeituraPCP::LerMensagem()
 	std::stringstream mensagem;
 
 	mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5) << "#" << GerarOperacao() << "#" << GerarHora() << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(99999), 5);
-	
+
 	listaEncadeada->Inserir(mensagem.str());
 	//std::cout << mensagem.str() << std::endl;
 
 	//Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
-	Sleep(5000);
+	Sleep(1000);
 	nseq++;
 }
 
 std::string LeituraPCP::GerarOperacao()
 {
 	std::stringstream ss;
-	ss << charAleatorio() << charAleatorio() << charAleatorio() << "-" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(9999),4);
+	ss << charAleatorio() << charAleatorio() << charAleatorio() << "-" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(9999), 4);
 
 	return ss.str();
 }
@@ -53,7 +54,7 @@ std::string LeituraPCP::GerarHora()
 	hora = rand() % 24;
 	minuto = rand() % 60;
 	segundo = rand() % 60;
-	ss << FuncoesAuxiliares::Formatar(hora,2) << ":" << FuncoesAuxiliares::Formatar(minuto, 2) <<":" << FuncoesAuxiliares::Formatar(segundo, 2);
+	ss << FuncoesAuxiliares::Formatar(hora, 2) << ":" << FuncoesAuxiliares::Formatar(minuto, 2) << ":" << FuncoesAuxiliares::Formatar(segundo, 2);
 	return ss.str();
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
+#include "ListaEncadeada.h"
 
 class LeituraPCP
 {

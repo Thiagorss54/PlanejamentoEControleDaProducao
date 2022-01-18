@@ -8,8 +8,8 @@
 #include <process.h>
 #include <conio.h>
 
-#include "../LeituraSupervisorio/LeituraSupervisorio.h"
-#include "../LeituraPCP/LeituraPCP.h"
+#include "../PlanejamentoEControleDaProducao/LeituraSupervisorio.h"
+#include "../PlanejamentoEControleDaProducao/LeituraPCP.h"
 #include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
 
 
@@ -136,9 +136,16 @@ int main()
 		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, r, s, e);
 	} while (instrucao != ESC);
 
+	
 	// Aguarda término das threads homens e mulheres
 	dwRet = WaitForMultipleObjects(4, hThreads, TRUE, INFINITE);
 	//CheckForError(dwRet == WAIT_OBJECT_0);
+
+
+	//Printa a lista1
+	SetConsoleTextAttribute(hOut, WHITE);
+	lista1->Print();
+
 
 	// Fecha todos os handles de objetos do kernel
 	for (int i = 0; i < 4; ++i)
@@ -147,7 +154,7 @@ int main()
 	// Fecha os handles dos objetos de sincronização
 	CloseHandle(hAguardaTeclado);
 	CloseHandle(hListaLivre);
-	// [INSIRA AQUI AS CHAMADAS DE FECHAMENTO DE HANDLES]
+	
 
 	return EXIT_SUCCESS;
 }

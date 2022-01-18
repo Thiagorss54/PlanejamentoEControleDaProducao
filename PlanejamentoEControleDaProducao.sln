@@ -1,24 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.32014.148
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32002.261
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlanejamentoEControleDaProducao", "PlanejamentoEControleDaProducao\PlanejamentoEControleDaProducao.vcxproj", "{7F95DFD1-C816-4B41-A847-B8C5DB356602}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeituraTeclado", "LeituraTeclado\LeituraTeclado.vcxproj", "{B55D740E-A48C-4A48-8860-9D3A1A3EBBA8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{A7F55B4C-B5E7-4203-887F-6469A6D3CD72} = {A7F55B4C-B5E7-4203-887F-6469A6D3CD72}
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F} = {40F75B96-B977-4393-9DD7-DC49E3354C4F}
 		{7F95DFD1-C816-4B41-A847-B8C5DB356602} = {7F95DFD1-C816-4B41-A847-B8C5DB356602}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GestaoProducao", "GestaoProducao\GestaoProducao.vcxproj", "{A7F55B4C-B5E7-4203-887F-6469A6D3CD72}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapturaMensagens", "CapturaMensagens\CapturaMensagens.vcxproj", "{40F75B96-B977-4393-9DD7-DC49E3354C4F}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeituraSupervisorio", "LeituraSupervisorio\LeituraSupervisorio.vcxproj", "{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeituraPCP", "LeituraPCP\LeituraPCP.vcxproj", "{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,30 +45,6 @@ Global
 		{A7F55B4C-B5E7-4203-887F-6469A6D3CD72}.Release|x64.Build.0 = Release|x64
 		{A7F55B4C-B5E7-4203-887F-6469A6D3CD72}.Release|x86.ActiveCfg = Release|Win32
 		{A7F55B4C-B5E7-4203-887F-6469A6D3CD72}.Release|x86.Build.0 = Release|Win32
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Debug|x64.ActiveCfg = Debug|x64
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Debug|x64.Build.0 = Debug|x64
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Debug|x86.ActiveCfg = Debug|Win32
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Debug|x86.Build.0 = Debug|Win32
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Release|x64.ActiveCfg = Release|x64
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Release|x64.Build.0 = Release|x64
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Release|x86.ActiveCfg = Release|Win32
-		{40F75B96-B977-4393-9DD7-DC49E3354C4F}.Release|x86.Build.0 = Release|Win32
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Debug|x64.ActiveCfg = Debug|x64
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Debug|x64.Build.0 = Debug|x64
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Debug|x86.ActiveCfg = Debug|Win32
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Debug|x86.Build.0 = Debug|Win32
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Release|x64.ActiveCfg = Release|x64
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Release|x64.Build.0 = Release|x64
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Release|x86.ActiveCfg = Release|Win32
-		{1FEBE633-4363-49DD-8C06-BB3AC5B8B89A}.Release|x86.Build.0 = Release|Win32
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Debug|x64.ActiveCfg = Debug|x64
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Debug|x64.Build.0 = Debug|x64
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Debug|x86.ActiveCfg = Debug|Win32
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Debug|x86.Build.0 = Debug|Win32
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Release|x64.ActiveCfg = Release|x64
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Release|x64.Build.0 = Release|x64
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Release|x86.ActiveCfg = Release|Win32
-		{7504C1BB-66CF-43D2-ADC5-B22060CF66F3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
