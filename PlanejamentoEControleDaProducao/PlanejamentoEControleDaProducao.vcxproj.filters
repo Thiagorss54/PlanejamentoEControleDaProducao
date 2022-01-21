@@ -30,6 +30,9 @@
     <ClCompile Include="LeituraSupervisorio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RetirarMensagem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LeituraSupervisorio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RetirarMensagem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
