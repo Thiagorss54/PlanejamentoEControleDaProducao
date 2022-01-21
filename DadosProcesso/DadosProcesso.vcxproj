@@ -21,13 +21,13 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{7f95dfd1-c816-4b41-a847-b8c5db356602}</ProjectGuid>
-    <RootNamespace>PlanejamentoEControleDaProducao</RootNamespace>
+    <ProjectGuid>{62af723c-5873-42c6-abc1-144572cc5be0}</ProjectGuid>
+    <RootNamespace>DadosProcesso</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -139,19 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FuncoesAuxiliares.cpp" />
-    <ClCompile Include="LeituraPCP.cpp" />
-    <ClCompile Include="LeituraSupervisorio.cpp" />
-    <ClCompile Include="ListaEncadeada.cpp" />
-    <ClCompile Include="PlanejamentoEControleDaProducao.cpp" />
-    <ClCompile Include="RetirarMensagem.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h" />
-    <ClInclude Include="LeituraPCP.h" />
-    <ClInclude Include="LeituraSupervisorio.h" />
-    <ClInclude Include="ListaEncadeada.h" />
-    <ClInclude Include="RetirarMensagem.h" />
+    <ClCompile Include="DadosProcesso.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

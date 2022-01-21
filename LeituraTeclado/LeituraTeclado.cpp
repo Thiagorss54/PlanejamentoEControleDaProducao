@@ -11,6 +11,7 @@
 #include "../PlanejamentoEControleDaProducao/LeituraSupervisorio.h"
 #include "../PlanejamentoEControleDaProducao/LeituraPCP.h"
 #include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
+#include "../PlanejamentoEControleDaProducao/RetirarMensagem.h"
 
 
 
@@ -31,16 +32,16 @@ typedef unsigned* CAST_LPDWORD;
 DWORD WINAPI ThreadLeituraSupervisorio();
 DWORD WINAPI ThreadLeituraPCP();
 DWORD WINAPI ThreadTeclado();
-DWORD WINAPI ThreadRetirarMensagem();	// Thread representando a retirada de mensagem
+DWORD WINAPI ThreadRetirarMensagem();
 
 void ExecutarInstrucao(char instrucao,
 	LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	bool& r, bool& s, bool& e);
+	RetirarMensagem* retirarMensagem, bool& s, bool& e);
 
 void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	bool r, bool s, bool e);
+	RetirarMensagem* retirarMensagem, bool s, bool e);
 
 
 HANDLE hAguardaTeclado;	// Permite acesso exclusivo à alterações no teclado
@@ -51,18 +52,63 @@ char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
 LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio(lista1);
 LeituraPCP* leituraPCP = new LeituraPCP(lista1);
-bool r = false, s = false, e = false;
+RetirarMensagem* retirarMensagem = new RetirarMensagem(lista1);
+bool s = false, e = false;
 using namespace std;
 // THREAD PRIMÁRIA
 int main()
 {
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	if (!CreateProcess(L"..\\x64\\Debug\\GestaoProducao.exe",
+		NULL,        
+		NULL,      
+		NULL,         
+		TRUE,         
+		NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE,   
+		NULL,         
+		L"..\\x64\\Debug",   
+		&si,     
+		&pi)       
+		)
+	{
+		printf("CreateProcess failed (%d).\n", GetLastError());
+	}
+
+	STARTUPINFO si1;
+	PROCESS_INFORMATION pi1;
+
+	ZeroMemory(&si1, sizeof(si1));
+	si1.cb = sizeof(si1);
+	ZeroMemory(&pi1, sizeof(pi1));
+
+	if (!CreateProcess(L"..\\x64\\Debug\\DadosProcesso.exe",
+		NULL,
+		NULL,
+		NULL,
+		TRUE,
+		NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE,
+		NULL,
+		L"..\\x64\\Debug",
+		&si1,
+		&pi1)
+		)
+	{
+		printf("CreateProcess failed (%d).\n", GetLastError());
+	}
+
 	HANDLE hThreads[4];       // Leitura PCP, Leitura S
 	DWORD dwIdTelcado, dwIdSupervisorio, dwIdPCP, dwIdRetiraMsg;
 	DWORD dwExitCode = 0;
 	DWORD dwRet;
 
-	hAguardaTeclado = CreateMutex(NULL, FALSE, (LPCWSTR)"AguardaTeclado");
-	hListaLivre = CreateSemaphore(NULL, 1, 1, (LPCWSTR)"ListaLivre");
+	hAguardaTeclado = CreateMutex(NULL, FALSE, L"AguardaTeclado");
+	hListaLivre = CreateSemaphore(NULL, 1, 1, L"ListaLivre");
 
 	// Obtém um handle para a saída da console
 	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -130,10 +176,10 @@ int main()
 	}
 
 	//Lista
-	bool r = false, s = false, e = false;
+	bool s = false, e = false;
 	do {
 		instrucao = _getch();
-		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, r, s, e);
+		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem, s, e);
 	} while (instrucao != ESC);
 
 	
@@ -163,7 +209,8 @@ int main()
 void ExecutarInstrucao(char instrucao,
 	LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	bool& r, bool& s, bool& e)
+	RetirarMensagem* retirarMensagem,
+	bool& s, bool& e)
 {
 	switch (tolower(instrucao)) {
 	case ('l'):
@@ -175,7 +222,7 @@ void ExecutarInstrucao(char instrucao,
 		break;
 
 	case ('r'):
-		//capturaMensagens->AlterarStatus();
+		retirarMensagem->AlterarStatus();
 		break;
 
 	case ('s'):
@@ -200,11 +247,12 @@ void ExecutarInstrucao(char instrucao,
 
 void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	bool r, bool s, bool e)
+	RetirarMensagem* retirarMensagem,
+	bool s, bool e)
 {
 	cout << "Instrucao 'l' - Leitura do Supervisorio \tStatus: " << leituraSupervisorio->GetStatus() << " \n";
 	cout << "Instrucao 'p' - Leitura do PCP \tStatus: " << leituraPCP->GetStatus() << " \n";
-	cout << "Instrucao 'r' - CapturaMensagens \tStatus: " << r << " \n"; //capturaMensagens->GetStatus()
+	cout << "Instrucao 'r' - CapturaMensagens \tStatus: " << retirarMensagem->GetStatus() << " \n";
 	cout << "Instrucao 's' - DadosProcesso \tStatus: " << s << " \n"; //dadosProcesso->GetStatus()
 	cout << "Instrucao 'e' - GestaoProducao \tStatus: " << e << " \n"; //gestaoProducao->GetStatus()
 	cout << "Instrucao '1' - Limpar console DadosProcesso\n"; //dadosProcesso->GetStatus()
@@ -216,7 +264,7 @@ DWORD WINAPI ThreadTeclado() {
 	BOOL bStatus;
 
 	do {
-		GerarDashboard(leituraSupervisorio, leituraPCP, r, s, e);
+		GerarDashboard(leituraSupervisorio, leituraPCP, retirarMensagem, s, e);
 		Sleep(60000);
 		system("cls");
 	} while (instrucao != ESC);
@@ -230,10 +278,8 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 	do {
 		if (leituraSupervisorio->GetStatus()) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			SetConsoleTextAttribute(hOut, HLRED);
-			//cout << "Inicio" << endl;
+			SetConsoleTextAttribute(hOut, HLGREEN);
 			leituraSupervisorio->LerMensagem();
-			//cout << "Fim" << endl;
 			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
 
@@ -249,9 +295,7 @@ DWORD WINAPI ThreadLeituraPCP() {
 		if (leituraPCP->GetStatus()) {
 			WaitForSingleObject(hListaLivre, INFINITE);
 			SetConsoleTextAttribute(hOut, HLGREEN);
-			//cout << "Inicio" << endl;
 			leituraPCP->LerMensagem();
-			//cout << "Fim" << endl;
 			ReleaseSemaphore(hListaLivre, 1, NULL);
 			
 		}
@@ -264,7 +308,12 @@ DWORD WINAPI ThreadRetirarMensagem() {
 	BOOL bStatus;
 
 	do {
-
+		if (retirarMensagem->GetStatus()) {
+			WaitForSingleObject(hListaLivre, INFINITE);
+			SetConsoleTextAttribute(hOut, HLRED);
+			retirarMensagem->RetiraMensagem();
+			ReleaseSemaphore(hListaLivre, 1, NULL);
+		}
 
 	} while (instrucao != ESC);
 	return 0;

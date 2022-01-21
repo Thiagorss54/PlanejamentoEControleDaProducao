@@ -46,6 +46,7 @@ string ListaEncadeada::Remover() {
     string v = remover->msg;
     delete remover;
     tamanho--;
+    std::cout << "Mensagem [" << tamanho << "] Removida!" << std::endl;
     return v;
 }
 bool ListaEncadeada::Cheia() {
