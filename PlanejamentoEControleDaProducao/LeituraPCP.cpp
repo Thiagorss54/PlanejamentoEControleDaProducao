@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #define TIPO 0
+#define NSEQ_MAX 99999
 
 LeituraPCP::LeituraPCP(ListaEncadeada* listaEncadeada_) :listaEncadeada(listaEncadeada_)
 {
@@ -36,7 +37,12 @@ void LeituraPCP::LerMensagem()
 
 	//Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
 	Sleep(1000);
-	nseq++;
+	if (nseq == NSEQ_MAX) {
+		nseq = 1;
+	}
+	else {
+		nseq++;
+	}
 }
 
 std::string LeituraPCP::GerarOperacao()
@@ -65,11 +71,3 @@ char LeituraPCP::charAleatorio()
 
 	return result;
 }
-
-//int main() {
-//	LeituraPCP* leituraPCP = new LeituraPCP();
-//	for (int i = 0; i < 100; ++i) {
-//		leituraPCP->LerMensagem();
-//	}
-//	return 0;
-//}

@@ -11,7 +11,7 @@
 
 
 #define TIPO 5
-
+#define NSEQ_MAX 99999
 
 std::vector<std::string> SepararString(std::string mensagem, std::string delimitador) {
 	std::vector<std::string> resultado;
@@ -60,16 +60,14 @@ void LeituraSupervisorio::LerMensagem() {
 	listaEncadeada->Inserir(mensagem.str());
 	//std::cout << mensagem.str() << std::endl;
 
-	Sleep(1000);
+	Sleep(100);
 
-	nseq++;
+	if (nseq == NSEQ_MAX) {
+		nseq = 1;
+	}
+	else {
+		nseq++;
+	}
 }
 
 
-//int main() {
-//    LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio();
-//    for (int i = 0; i < 100; ++i) {
-//        leituraSupervisorio->LerMensagem();
-//    }
-//    return 0;
-//}
