@@ -26,8 +26,11 @@ void ListaEncadeada::Inserir(string valor) {
         fim->proximo = novo;
         fim = novo;
     }
-    std::cout << "Mensagem [" << tamanho << "] adicionada!" << std::endl;
+    //std::cout << "Mensagem [" << tamanho << "] adicionada!" << std::endl;
     tamanho++;
+    if (Cheia()) {
+        std::cout << "LISTA CHEIA!" << std::endl;
+    }
 }
 
 string ListaEncadeada::Remover() {
@@ -46,7 +49,6 @@ string ListaEncadeada::Remover() {
     string v = remover->msg;
     delete remover;
     tamanho--;
-    std::cout << "Mensagem [" << tamanho << "] Removida!" << std::endl;
     return v;
 }
 bool ListaEncadeada::Cheia() {

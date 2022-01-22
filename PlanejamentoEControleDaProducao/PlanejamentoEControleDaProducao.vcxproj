@@ -147,7 +147,7 @@
     <ClCompile Include="RetirarMensagem.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h" />
+    <ClInclude Include="FuncoesAuxiliares.h" />
     <ClInclude Include="LeituraPCP.h" />
     <ClInclude Include="LeituraSupervisorio.h" />
     <ClInclude Include="ListaEncadeada.h" />

@@ -35,9 +35,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\LeituraSupervisorio\FuncoesAuxiliares.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ListaEncadeada.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RetirarMensagem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FuncoesAuxiliares.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

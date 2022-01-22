@@ -1,22 +1,42 @@
-// GestaoProducao.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <process.h>
+
+typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
+                                                    // _beginthreadex
+typedef unsigned* CAST_LPDWORD;
+
+HANDLE hEventGestao;
+HANDLE hEventEsc;
 
 int main()
 {
-    int a;
-    std::cout << "Hello World!\n";
-    std::cin >> a;
+    bool status = FALSE;
+    hEventGestao = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoGestao");
+    hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
+    HANDLE Events[2] = { hEventEsc, hEventGestao };
+    DWORD ret;
+    int tipoEvento;
+    
+    do {
+        ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
+        tipoEvento = ret - WAIT_OBJECT_0;
+        if (tipoEvento == 1) {
+            std::cout << "STATUS:  ";
+            if (status) {
+                std::cout << "BLOQUEADO" << std::endl;
+            }
+            else {
+                std::cout << "ATIVO" << std::endl;
+            }
+            status = !status;
+        }
+
+    } while (tipoEvento == 1);
+
+
+
+    CloseHandle(hEventGestao);
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

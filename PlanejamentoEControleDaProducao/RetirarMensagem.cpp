@@ -24,6 +24,6 @@ bool RetirarMensagem::GetStatus() {
 
 string RetirarMensagem::RetiraMensagem() {
 	string msg = listaEncadeada->Remover();
-	Sleep(1000);
+	//Sleep(1000);
 	return msg;
 }
