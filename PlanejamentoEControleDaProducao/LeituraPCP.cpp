@@ -33,16 +33,15 @@ void LeituraPCP::LerMensagem()
 	mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5) << "#" << GerarOperacao() << "#" << GerarHora() << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(99999), 5);
 
 	listaEncadeada->Inserir(mensagem.str());
-	//std::cout << mensagem.str() << std::endl;
 
 	//Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
-	Sleep(1000);
 	if (nseq == NSEQ_MAX) {
 		nseq = 1;
 	}
 	else {
 		nseq++;
 	}
+	Sleep(1000);
 }
 
 std::string LeituraPCP::GerarOperacao()
