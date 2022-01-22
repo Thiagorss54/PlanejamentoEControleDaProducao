@@ -1,5 +1,9 @@
 #include "ListaEncadeada.h"
 #include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <windows.h>
 
 ListaEncadeada::ListaEncadeada(int tamanhoMax_) :tamanhoMax(tamanhoMax_) {
     inicio = nullptr;
@@ -26,7 +30,6 @@ void ListaEncadeada::Inserir(string valor) {
         fim->proximo = novo;
         fim = novo;
     }
-    //std::cout << "Mensagem [" << tamanho << "] adicionada!" << std::endl;
     tamanho++;
     if (Cheia()) {
         std::cout << "LISTA CHEIA!" << std::endl;

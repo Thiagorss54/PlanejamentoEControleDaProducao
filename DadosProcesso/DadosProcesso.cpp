@@ -36,7 +36,5 @@ int main()
 
     } while (tipoEvento == 1);
 
-
-
     CloseHandle(hEventProcesso);
 }

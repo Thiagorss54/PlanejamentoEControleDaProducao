@@ -1,6 +1,3 @@
-// LeituraTeclado.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <windows.h>
 #include <iostream>
 #include <stdio.h>
@@ -12,8 +9,6 @@
 #include "../PlanejamentoEControleDaProducao/LeituraPCP.h"
 #include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
 #include "../PlanejamentoEControleDaProducao/RetirarMensagem.h"
-
-
 
 #define _CHECKERROR 1
 #include "CheckForError.h"
@@ -28,7 +23,6 @@ typedef unsigned* CAST_LPDWORD;
 
 #define	ESC 0x1B			// Tecla para encerrar o programa
 
-
 DWORD WINAPI ThreadLeituraSupervisorio();
 DWORD WINAPI ThreadLeituraPCP();
 DWORD WINAPI ThreadTeclado();
@@ -37,57 +31,53 @@ DWORD WINAPI ThreadRetirarMensagem();
 void ExecutarInstrucao(char instrucao,
 	LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	RetirarMensagem* retirarMensagem, bool& s, bool& e);
+	RetirarMensagem* retirarMensagem);
 
 void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	RetirarMensagem* retirarMensagem, bool s, bool e);
+	RetirarMensagem* retirarMensagem);
 
+HANDLE hListaLivre, hPosicoesLivres, hPosicoesOcupadas;		// Semáforo para indicar que a lista circular está livre
+HANDLE hOut;												// Handle para a saída da console
+HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventProcesso;
 
-HANDLE hListaLivre,hPosicoesLivres,hPosicoesOcupadas;		// Semáforo para indicar que a lista circular está livre
-HANDLE hOut;						// Handle para a saída da console
-HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar,hEventGestao, hEventProcesso;
-
-char instrucao; 
+char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
 LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio(lista1);
 LeituraPCP* leituraPCP = new LeituraPCP(lista1);
 RetirarMensagem* retirarMensagem = new RetirarMensagem(lista1);
-bool s = false, e = false;
 using namespace std;
+
 // THREAD PRIMÁRIA
 int main()
 {
-	
+	// Criando Processo GestaoProducao
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
-
 	ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
-
 	if (!CreateProcess(L"..\\x64\\Debug\\GestaoProducao.exe",
-		NULL,        
-		NULL,      
-		NULL,         
-		TRUE,         
-		NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE,   
-		NULL,         
-		L"..\\x64\\Debug",   
-		&si,     
-		&pi)       
+		NULL,
+		NULL,
+		NULL,
+		TRUE,
+		NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE,
+		NULL,
+		L"..\\x64\\Debug",
+		&si,
+		&pi)
 		)
 	{
-		printf("CreateProcess failed (%d).\n", GetLastError());
+		printf("CreateProcess GestaoProducao failed (%d).\n", GetLastError());
 	}
 
+	// Criando Processo GestaoProducao
 	STARTUPINFO si1;
 	PROCESS_INFORMATION pi1;
-
 	ZeroMemory(&si1, sizeof(si1));
 	si1.cb = sizeof(si1);
 	ZeroMemory(&pi1, sizeof(pi1));
-
 	if (!CreateProcess(L"..\\x64\\Debug\\DadosProcesso.exe",
 		NULL,
 		NULL,
@@ -100,21 +90,14 @@ int main()
 		&pi1)
 		)
 	{
-		printf("CreateProcess failed (%d).\n", GetLastError());
+		printf("CreateProcess DadosProcesso failed (%d).\n", GetLastError());
 	}
-	
 
-	HANDLE hThreads[4];       // Leitura PCP, Leitura S
-	DWORD dwIdTelcado, dwIdSupervisorio, dwIdPCP, dwIdRetiraMsg;
-	DWORD dwExitCode = 0;
-	DWORD dwRet;
-
+	// Criando Semaforos
 	hListaLivre = CreateSemaphore(NULL, 1, 1, L"ListaLivre");
 	hPosicoesLivres = CreateSemaphore(NULL, 100, 100, L"ListaCheia");
 
-
 	//Criando eventos
-
 	hEventEsc = CreateEvent(NULL, TRUE, FALSE, L"EventoEsc");
 	hEventLPCP = CreateEvent(NULL, TRUE, FALSE, L"EventoPCP");
 	hEventLSup = CreateEvent(NULL, TRUE, FALSE, L"EventoSup");
@@ -128,28 +111,37 @@ int main()
 		printf("Erro ao obter handle para a saída da console\n");
 
 	//CRIACAO DAS THREADS
+	HANDLE hThreads[4];       // Leitura PCP, Leitura S
+	DWORD dwIdTelcado, dwIdSupervisorio, dwIdPCP, dwIdRetiraMsg;
+	DWORD dwExitCode = 0;
+	DWORD dwRet;
+
+	// Thread Teclado
 	hThreads[0] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadTeclado,	//Casting necessário
+		(CAST_FUNCTION)ThreadTeclado,
 		(LPVOID)(INT_PTR)0,
 		0,
-		(CAST_LPDWORD)&dwIdTelcado);		//Casting necessário
+		(CAST_LPDWORD)&dwIdTelcado);
+	CheckForError(hThreads[0]);
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread Teclado  %d criada com Id=%0x\n", 0, dwIdTelcado);
 	else {
-		printf("Erro na criacao da thread Teclado ! N = %d Erro = %d\n", 2, errno);
+		printf("Erro na criacao da thread Teclado ! N = %d Erro = %d\n", 0, errno);
 		exit(0);
 	}
 
+	// Thread LeituraSupervisorio
 	hThreads[1] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadLeituraSupervisorio,	//Casting necessário
+		(CAST_FUNCTION)ThreadLeituraSupervisorio,
 		(LPVOID)(INT_PTR)1,
 		0,
-		(CAST_LPDWORD)&dwIdSupervisorio);		//Casting necessário
+		(CAST_LPDWORD)&dwIdSupervisorio);
+	CheckForError(hThreads[1]);
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread Leitura Supervisorio  %d criada com Id=%0x\n", 1, dwIdSupervisorio);
@@ -158,13 +150,15 @@ int main()
 		exit(0);
 	}
 
+	// Thread LeituraPCP
 	hThreads[2] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadLeituraPCP,	//Casting necessário
+		(CAST_FUNCTION)ThreadLeituraPCP,
 		(LPVOID)(INT_PTR)2,
 		0,
-		(CAST_LPDWORD)&dwIdPCP);		//Casting necessário
+		(CAST_LPDWORD)&dwIdPCP);
+	CheckForError(hThreads[2]);
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[2] != (HANDLE)-1L)
 		printf("Thread Leitura PCP  %d criada com Id=%0x\n", 2, dwIdPCP);
@@ -173,13 +167,15 @@ int main()
 		exit(0);
 	}
 
+	// ThreadRetirarMensagem
 	hThreads[3] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
-		(CAST_FUNCTION)ThreadRetirarMensagem,	//Casting necessário
+		(CAST_FUNCTION)ThreadRetirarMensagem,
 		(LPVOID)(INT_PTR)3,
 		0,
-		(CAST_LPDWORD)&dwIdRetiraMsg);		//Casting necessário
+		(CAST_LPDWORD)&dwIdRetiraMsg);
+	CheckForError(hThreads[3]);
 	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[3] != (HANDLE)-1L)
 		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 3, dwIdRetiraMsg);
@@ -187,12 +183,11 @@ int main()
 		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 3, errno);
 		exit(0);
 	}
-
+	
 
 	// Aguarda término das threads 
 	dwRet = WaitForMultipleObjects(4, hThreads, TRUE, INFINITE);
-	//CheckForError(dwRet == WAIT_OBJECT_0);
-
+	CheckForError(dwRet == WAIT_OBJECT_0);
 
 	// Fecha todos os handles de objetos do kernel
 	for (int i = 0; i < 4; ++i)
@@ -202,6 +197,7 @@ int main()
 	CloseHandle(hListaLivre);
 	CloseHandle(hPosicoesLivres);
 	CloseHandle(hOut);
+
 	//CloseHandle Event
 	CloseHandle(hEventEsc);
 	CloseHandle(hEventLPCP);
@@ -216,16 +212,19 @@ int main()
 void ExecutarInstrucao(char instrucao,
 	LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	RetirarMensagem* retirarMensagem,
-	bool& s, bool& e)
+	RetirarMensagem* retirarMensagem)
 {
 	switch (tolower(instrucao)) {
 	case ('l'):
 		if (leituraSupervisorio->GetStatus()) {
-			ResetEvent(hEventLSup);
+			ResetEvent(hEventLSup); 
+			SetConsoleTextAttribute(hOut, HLRED);
+			cout << "Leitura Supervisorio desativada \n";
 		}
 		else {
 			SetEvent(hEventLSup);
+			SetConsoleTextAttribute(hOut, HLGREEN);
+			cout << "Leitura Supervisorio ativada \n";
 		}
 		leituraSupervisorio->AlterarStatus();
 		break;
@@ -233,9 +232,13 @@ void ExecutarInstrucao(char instrucao,
 	case ('p'):
 		if (leituraPCP->GetStatus()) {
 			ResetEvent(hEventLPCP);
+			SetConsoleTextAttribute(hOut, HLRED);
+			cout << "Leitura PCP desativada \n";
 		}
 		else {
 			SetEvent(hEventLPCP);
+			SetConsoleTextAttribute(hOut, HLGREEN);
+			cout << "Leitura PCP ativada \n";
 		}
 		leituraPCP->AlterarStatus();
 		break;
@@ -243,72 +246,59 @@ void ExecutarInstrucao(char instrucao,
 	case ('r'):
 		if (retirarMensagem->GetStatus()) {
 			ResetEvent(hEventRetirar);
+			SetConsoleTextAttribute(hOut, HLRED);
+			cout << "Retirar mensagem desativada \n";
 		}
 		else {
 			SetEvent(hEventRetirar);
+			SetConsoleTextAttribute(hOut, HLGREEN);
+			cout << "Retirar mensagem ativada \n";
 		}
 		retirarMensagem->AlterarStatus();
 		break;
 
 	case ('s'):
 		PulseEvent(hEventProcesso);
-		//dadosProcesso->AlterarStatus();
 		break;
 
 	case ('e'):
 		PulseEvent(hEventGestao);
-		//gestaoProducao->AlterarStatus();
 		break;
 
-	case ('1'):
-		//dadosProcesso->LimparConsole();
-		break;
-
-	case ('2'):
-		//gestaoProducao->LimparConsole();
-		break;
 	case (ESC):
 		SetEvent(hEventEsc);
+		break;
+
 	default:
 		break;
 	}
 }
 
-void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
-	LeituraPCP* leituraPCP,
-	RetirarMensagem* retirarMensagem,
-	bool s, bool e)
+void GerarDashboard()
 {
-	cout << "Instrucao 'l' - Leitura do Supervisorio \tStatus: " << leituraSupervisorio->GetStatus() << " \n";
-	cout << "Instrucao 'p' - Leitura do PCP \tStatus: " << leituraPCP->GetStatus() << " \n";
-	cout << "Instrucao 'r' - CapturaMensagens \tStatus: " << retirarMensagem->GetStatus() << " \n";
-	cout << "Instrucao 's' - DadosProcesso \tStatus: " << s << " \n"; //dadosProcesso->GetStatus()
-	cout << "Instrucao 'e' - GestaoProducao \tStatus: " << e << " \n"; //gestaoProducao->GetStatus()
-	cout << "Instrucao '1' - Limpar console DadosProcesso\n"; //dadosProcesso->GetStatus()
-	cout << "Instrucao '2' - Limpar console GestaoProducao\n"; //gestaoProducao->GetStatus()
-	cout << "Instrucao 'esc' - Encerrar processos\n";
+	SetConsoleTextAttribute(hOut, WHITE);
+	cout << "Instrucao 'l' - Leitura do Supervisorio \n";
+	cout << "Instrucao 'p' - Leitura do PCP \n";
+	cout << "Instrucao 'r' - CapturaMensagens \n";
+	cout << "Instrucao 's' - DadosProcesso \n";
+	cout << "Instrucao 'e' - GestaoProducao \n";
+	cout << "Instrucao 'esc' - Encerrar processos \n";
 }
 DWORD WINAPI ThreadTeclado() {
-	DWORD dwStatus;
-	BOOL bStatus;
-
 	system("cls");
-	bool s = false, e = false;
+	GerarDashboard();
+
 	do {
-		
 		instrucao = _getch();
-		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem, s, e);
-		
+		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem);
 	} while (instrucao != ESC);
+
+	cout << "Thread Teclado terminando... \n";
 	_endthreadex(0);
 	return 0;
 }
 
 DWORD WINAPI ThreadLeituraSupervisorio() {
-	DWORD dwStatus;
-	BOOL bStatus;
-
-
 	HANDLE Events[2] = { hEventEsc, hEventLSup };
 	DWORD ret;
 	int tipoEvento;
@@ -319,23 +309,17 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			SetConsoleTextAttribute(hOut, HLGREEN);
 			leituraSupervisorio->LerMensagem();
 			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
+	} while (tipoEvento == 1);
 
-	} while (tipoEvento == 1 );
-
-	cout << "Thread Leitura Supervisorio terminando..." << endl;
+	cout << "Thread Leitura Supervisorio terminando... \n";
 	_endthreadex(0);
 	return 0;
 }
 
 DWORD WINAPI ThreadLeituraPCP() {
-	DWORD dwStatus;
-	BOOL bStatus;
-
-
 	HANDLE Events[2] = { hEventEsc, hEventLPCP };
 	DWORD ret;
 	int tipoEvento;
@@ -345,22 +329,17 @@ DWORD WINAPI ThreadLeituraPCP() {
 		tipoEvento = ret - WAIT_OBJECT_0;
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			SetConsoleTextAttribute(hOut, HLRED);
 			leituraPCP->LerMensagem();
 			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
-
 	} while (tipoEvento == 1);
 
-	cout << "Thread Leitura PCP terminando..." << endl;
+	cout << "Thread Leitura PCP terminando... \n";
 	_endthreadex(0);
 	return 0;
 }
 
 DWORD WINAPI ThreadRetirarMensagem() {
-	DWORD dwStatus;
-	BOOL bStatus;
-
 	HANDLE Events[2] = { hEventEsc, hEventRetirar };
 	DWORD ret;
 	int tipoEvento;
@@ -368,17 +347,17 @@ DWORD WINAPI ThreadRetirarMensagem() {
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
-		if (tipoEvento ==1) {
+		if (tipoEvento == 1) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			SetConsoleTextAttribute(hOut, WHITE);
-			std::cout<< retirarMensagem->RetiraMensagem() << std::endl;
+			if (!lista1->Vazia()) {
+				SetConsoleTextAttribute(hOut, WHITE);
+				retirarMensagem->RetiraMensagem();
+			}
 			ReleaseSemaphore(hListaLivre, 1, NULL);
-			Sleep(2000);
 		}
+	} while (tipoEvento == 1);
 
-	} while (tipoEvento ==1);
-	
-	cout << "Thread RetirarMensagem terminando..." << endl;
+	cout << "Thread RetirarMensagem terminando... \n";
 	_endthreadex(0);
 	return 0;
 }
