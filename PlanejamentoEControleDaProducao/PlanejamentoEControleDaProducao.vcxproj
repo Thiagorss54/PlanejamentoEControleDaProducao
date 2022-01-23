@@ -143,7 +143,6 @@
     <ClCompile Include="LeituraPCP.cpp" />
     <ClCompile Include="LeituraSupervisorio.cpp" />
     <ClCompile Include="ListaEncadeada.cpp" />
-    <ClCompile Include="PlanejamentoEControleDaProducao.cpp" />
     <ClCompile Include="RetirarMensagem.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -26,17 +26,15 @@ int main()
         if (tipoEvento == 1) {
             std::cout << "STATUS:  ";
             if (status) {
-                std::cout << "BLOQUEADO" << std::endl;
+                std::cout << "BLOQUEADO\n";
             }
             else {
-                std::cout << "ATIVO" << std::endl;
+                std::cout << "ATIVO\n";
             }
             status = !status;
         }
 
     } while (tipoEvento == 1);
-
-
 
     CloseHandle(hEventGestao);
 }

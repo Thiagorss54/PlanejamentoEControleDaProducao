@@ -37,7 +37,7 @@ void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
 	RetirarMensagem* retirarMensagem);
 
-HANDLE hListaLivre, hPosicoesLivres, hPosicoesOcupadas;		// Semáforo para indicar que a lista circular está livre
+HANDLE hListaLivre, hPosicoesLivres;		// Semáforo para indicar que a lista circular está livre
 HANDLE hOut;												// Handle para a saída da console
 HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventProcesso;
 
@@ -183,7 +183,7 @@ int main()
 		printf("Erro na criacao da thread RetiraMensagem ! N = %d Erro = %d\n", 3, errno);
 		exit(0);
 	}
-	
+
 
 	// Aguarda término das threads 
 	dwRet = WaitForMultipleObjects(4, hThreads, TRUE, INFINITE);
@@ -217,7 +217,7 @@ void ExecutarInstrucao(char instrucao,
 	switch (tolower(instrucao)) {
 	case ('l'):
 		if (leituraSupervisorio->GetStatus()) {
-			ResetEvent(hEventLSup); 
+			ResetEvent(hEventLSup);
 			SetConsoleTextAttribute(hOut, HLRED);
 			cout << "Leitura Supervisorio desativada \n";
 		}
@@ -309,7 +309,9 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			leituraSupervisorio->LerMensagem();
+			if (!lista1->Cheia()) {
+				leituraSupervisorio->LerMensagem();
+			}
 			ReleaseSemaphore(hListaLivre, 1, NULL);
 		}
 	} while (tipoEvento == 1);
@@ -329,8 +331,11 @@ DWORD WINAPI ThreadLeituraPCP() {
 		tipoEvento = ret - WAIT_OBJECT_0;
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hListaLivre, INFINITE);
-			leituraPCP->LerMensagem();
+			if (!lista1->Cheia()) {
+				leituraPCP->LerMensagem();
+			}
 			ReleaseSemaphore(hListaLivre, 1, NULL);
+
 		}
 	} while (tipoEvento == 1);
 
