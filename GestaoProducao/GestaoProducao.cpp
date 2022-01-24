@@ -13,6 +13,7 @@ HANDLE hEventEsc;
 
 int main()
 {
+    SetConsoleTitle(L"Gestao da Producao");
     bool status = FALSE;
     hEventGestao = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoGestao");
     hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");

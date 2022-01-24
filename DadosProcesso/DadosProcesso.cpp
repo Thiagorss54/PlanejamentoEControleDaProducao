@@ -13,6 +13,7 @@ HANDLE hEventEsc;
 
 int main()
 {
+    SetConsoleTitle(L"Dados do Processo");
     bool status = FALSE;
     hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
     hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");

@@ -32,7 +32,7 @@ void ListaEncadeada::Inserir(string valor) {
     }
     tamanho++;
     if (Cheia()) {
-        std::cout << "LISTA CHEIA!z\n" ;
+        std::cout << "LISTA CHEIA!\n" ;
     }
 }
 
