@@ -51,6 +51,8 @@ using namespace std;
 // THREAD PRIMÁRIA
 int main()
 {
+	SetConsoleTitle(L"Planejamento e Controle da Producao");
+
 	// Criando Processo GestaoProducao
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
@@ -205,6 +207,7 @@ int main()
 	CloseHandle(hEventRetirar);
 	CloseHandle(hEventGestao);
 
+
 	return EXIT_SUCCESS;
 }
 
@@ -299,6 +302,7 @@ DWORD WINAPI ThreadTeclado() {
 }
 
 DWORD WINAPI ThreadLeituraSupervisorio() {
+	
 	HANDLE Events[2] = { hEventEsc, hEventLSup };
 	DWORD ret;
 	int tipoEvento;

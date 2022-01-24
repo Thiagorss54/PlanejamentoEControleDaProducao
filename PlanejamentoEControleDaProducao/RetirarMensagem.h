@@ -2,7 +2,7 @@
 #include <string>
 #include "ListaEncadeada.h"
 
-
+using namespace std;
 class RetirarMensagem
 {
 private:
