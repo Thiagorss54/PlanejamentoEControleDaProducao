@@ -9,6 +9,7 @@
 #include "../PlanejamentoEControleDaProducao/LeituraPCP.h"
 #include "../PlanejamentoEControleDaProducao/ListaEncadeada.h"
 #include "../PlanejamentoEControleDaProducao/RetirarMensagem.h"
+#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 #define _CHECKERROR 1
 #include "CheckForError.h"
@@ -40,6 +41,7 @@ void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 HANDLE hListaLivre, hPosicoesLivres;		// Semáforo para indicar que a lista circular está livre
 HANDLE hOut;												// Handle para a saída da console
 HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventProcesso;
+HANDLE hTemporizadorSup,hTemporizadorPCP;
 
 char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
@@ -106,6 +108,11 @@ int main()
 	hEventRetirar = CreateEvent(NULL, TRUE, FALSE, L"EventoRetirar");
 	hEventGestao = CreateEvent(NULL, TRUE, FALSE, L"EventoGestao");
 	hEventProcesso = CreateEvent(NULL, TRUE, FALSE, L"EventoProcesso");
+	
+
+	//Temporizadores
+	hTemporizadorSup = CreateWaitableTimer(NULL, FALSE, L"TemporizadorSup");
+	hTemporizadorPCP = CreateSemaphore(NULL, 0, 1, L"TemporizadorPCP");
 
 	// Obtém um handle para a saída da console
 	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -206,6 +213,8 @@ int main()
 	CloseHandle(hEventLSup);
 	CloseHandle(hEventRetirar);
 	CloseHandle(hEventGestao);
+	CloseHandle(hTemporizadorPCP);
+	CloseHandle(hTemporizadorSup);
 
 
 	return EXIT_SUCCESS;
@@ -306,17 +315,24 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 	HANDLE Events[2] = { hEventEsc, hEventLSup };
 	DWORD ret;
 	int tipoEvento;
-
+	LARGE_INTEGER time;
+	time.QuadPart = -0LL;
+	SetWaitableTimer(hTemporizadorSup, &time, 500, NULL, NULL, FALSE);
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 
 		if (tipoEvento == 1) {
+			WaitForSingleObject(hTemporizadorSup, INFINITE);
 			WaitForSingleObject(hListaLivre, INFINITE);
 			if (!lista1->Cheia()) {
+				
 				leituraSupervisorio->LerMensagem();
 			}
 			ReleaseSemaphore(hListaLivre, 1, NULL);
+
+			
+			
 		}
 	} while (tipoEvento == 1);
 
@@ -328,18 +344,21 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 DWORD WINAPI ThreadLeituraPCP() {
 	HANDLE Events[2] = { hEventEsc, hEventLPCP };
 	DWORD ret;
-	int tipoEvento;
+	int tipoEvento,tempoDeLeitura;
 
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
+
 		if (tipoEvento == 1) {
+			tempoDeLeitura = (rand() % 4001) + 1000;
+ 			WaitForSingleObject(hTemporizadorPCP, tempoDeLeitura);
 			WaitForSingleObject(hListaLivre, INFINITE);
 			if (!lista1->Cheia()) {
 				leituraPCP->LerMensagem();
 			}
 			ReleaseSemaphore(hListaLivre, 1, NULL);
-
+			
 		}
 	} while (tipoEvento == 1);
 

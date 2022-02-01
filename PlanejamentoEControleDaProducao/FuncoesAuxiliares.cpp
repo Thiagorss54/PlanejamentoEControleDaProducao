@@ -64,7 +64,7 @@ float FuncoesAuxiliares::ValorAleatorio(float max)
 }
 int FuncoesAuxiliares::ValorAleatorio(int max)
 {
-    float resultado = 0.0f;
+    int resultado = 0;
     resultado = rand() % (max + 1);
 
     return resultado;

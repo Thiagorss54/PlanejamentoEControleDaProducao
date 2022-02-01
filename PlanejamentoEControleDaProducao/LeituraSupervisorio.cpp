@@ -54,7 +54,6 @@ void LeituraSupervisorio::LerMensagem() {
 		<< "#" << FuncoesAuxiliares::GetHorario();
 
 	listaEncadeada->Inserir(mensagem.str());
-	Sleep(1000);
 
 	if (nseq == NSEQ_MAX) {
 		nseq = 1;
