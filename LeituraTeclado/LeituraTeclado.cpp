@@ -42,6 +42,7 @@ HANDLE hListaLivre, hPosicoesLivres;		// Semáforo para indicar que a lista circu
 HANDLE hOut;												// Handle para a saída da console
 HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventProcesso;
 HANDLE hTemporizadorSup,hTemporizadorPCP;
+HANDLE hPipeNotificacaoProducao, hPipeNotificacaoProcesso; // handle para pipes
 
 char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
@@ -49,6 +50,11 @@ LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio(lista1);
 LeituraPCP* leituraPCP = new LeituraPCP(lista1);
 RetirarMensagem* retirarMensagem = new RetirarMensagem(lista1);
 using namespace std;
+
+//Variaveis para pipes de notificacao
+bool sendMsg = TRUE;
+bool sendMsgFalse = FALSE;
+
 
 // THREAD PRIMÁRIA
 int main()
@@ -113,6 +119,32 @@ int main()
 	//Temporizadores
 	hTemporizadorSup = CreateWaitableTimer(NULL, FALSE, L"TemporizadorSup");
 	hTemporizadorPCP = CreateSemaphore(NULL, 0, 1, L"TemporizadorPCP");
+
+	//Pipe
+	hPipeNotificacaoProcesso = CreateNamedPipe(
+		L"\\\\.\\pipe\\NOTIFICACAOPROCESSO",
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		sizeof(bool),
+		sizeof(bool),
+		0,
+		NULL);
+
+	
+
+	hPipeNotificacaoProducao = CreateNamedPipe(
+		L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO",
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		sizeof(bool),
+		sizeof(bool),
+		0,
+		NULL);
+
+	ConnectNamedPipe(hPipeNotificacaoProducao, NULL);
+	ConnectNamedPipe(hPipeNotificacaoProcesso, NULL);
 
 	// Obtém um handle para a saída da console
 	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -198,6 +230,11 @@ int main()
 	dwRet = WaitForMultipleObjects(4, hThreads, TRUE, INFINITE);
 	CheckForError(dwRet == WAIT_OBJECT_0);
 
+
+	//Desconectando Pipe
+	DisconnectNamedPipe(hPipeNotificacaoProcesso);
+	DisconnectNamedPipe(hPipeNotificacaoProducao);
+	
 	// Fecha todos os handles de objetos do kernel
 	for (int i = 0; i < 4; ++i)
 		CloseHandle(hThreads[i]);
@@ -215,6 +252,8 @@ int main()
 	CloseHandle(hEventGestao);
 	CloseHandle(hTemporizadorPCP);
 	CloseHandle(hTemporizadorSup);
+	CloseHandle(hPipeNotificacaoProcesso);
+	CloseHandle(hPipeNotificacaoProducao);
 
 
 	return EXIT_SUCCESS;
@@ -276,8 +315,36 @@ void ExecutarInstrucao(char instrucao,
 	case ('e'):
 		PulseEvent(hEventGestao);
 		break;
+	case ('1'):
+		WriteFile(hPipeNotificacaoProcesso,
+			&sendMsg,
+			sizeof(sendMsg),
+			NULL,
+			NULL);
+		
+		break;
+	case ('2'):
+		WriteFile(hPipeNotificacaoProducao,
+			&sendMsg,
+			sizeof(sendMsg),
+			NULL,
+			NULL);
 
+		break;
 	case (ESC):
+		//Notificar finalizacao por pipe
+		WriteFile(hPipeNotificacaoProcesso,
+			&sendMsgFalse,
+			sizeof(sendMsgFalse),
+			NULL,
+			NULL);
+		WriteFile(hPipeNotificacaoProducao,
+			&sendMsgFalse,
+			sizeof(sendMsgFalse),
+			NULL,
+			NULL);
+
+		//Notificar finalizacao por event
 		SetEvent(hEventEsc);
 		break;
 
