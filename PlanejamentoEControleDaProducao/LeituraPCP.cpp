@@ -34,14 +34,13 @@ void LeituraPCP::LerMensagem()
 
 	listaEncadeada->Inserir(mensagem.str());
 
-	//Sleep(FuncoesAuxiliares::ValorAleatorio(5000));
 	if (nseq == NSEQ_MAX) {
 		nseq = 1;
 	}
 	else {
 		nseq++;
 	}
-	Sleep(1000);
+	
 }
 
 std::string LeituraPCP::GerarOperacao()
