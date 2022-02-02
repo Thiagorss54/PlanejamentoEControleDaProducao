@@ -15,10 +15,13 @@ HANDLE hPipeNotificacaoProcesso;
 
 
 DWORD WINAPI ThreadLimparConsole();
+
+bool status = FALSE;
+
 int main()
 {
     SetConsoleTitle(L"Dados do Processo");
-    bool status = FALSE;
+    
     hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
     hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
     HANDLE Events[2] = { hEventEsc, hEventProcesso };
@@ -40,6 +43,7 @@ int main()
 
     //Thread LimparConsole
     
+
     HANDLE hThread;
     DWORD dwIdLimparConsole;
 
@@ -57,6 +61,8 @@ int main()
         printf("Erro na criacao da thread LimparConsole ! N = %d Erro = %d\n", 0, errno);
         exit(0);
     }
+
+
 
     do {
         ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
@@ -79,8 +85,10 @@ int main()
     WaitForSingleObject(hThread, INFINITE);
 
     CloseHandle(hThread);
+
     CloseHandle(hEventProcesso);
     CloseHandle(hPipeNotificacaoProcesso);
+  
 }
 
 DWORD WINAPI ThreadLimparConsole()
@@ -105,3 +113,5 @@ DWORD WINAPI ThreadLimparConsole()
     
     return 0;
 }
+
+

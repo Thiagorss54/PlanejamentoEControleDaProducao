@@ -42,7 +42,7 @@ HANDLE hLista1Livre, hLista2Livre, hPosicoesLivres;		// Semáforo para indicar qu
 HANDLE hOut;												// Handle para a saída da console
 HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventProcesso;
 HANDLE hTemporizadorSup,hTemporizadorPCP;
-HANDLE hPipeNotificacaoProducao, hPipeNotificacaoProcesso; // handle para pipes
+HANDLE hPipeNotificacaoProducao, hPipeNotificacaoProcesso,hPipeGestaoProducao; // handle para pipes
 
 char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
@@ -56,11 +56,74 @@ using namespace std;
 bool sendMsg = TRUE;
 bool sendMsgFalse = FALSE;
 
+//Buffer para envio de mensagem por pipe
+char buffer[32] = "teste mensagem\0";
 
 // THREAD PRIMÁRIA
 int main()
 {
 	SetConsoleTitle(L"Planejamento e Controle da Producao");
+
+	//Pipe
+	hPipeNotificacaoProcesso = CreateNamedPipe(
+		L"\\\\.\\pipe\\NOTIFICACAOPROCESSO",
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		sizeof(bool),
+		sizeof(bool),
+		NMPWAIT_USE_DEFAULT_WAIT,
+		NULL);
+
+
+	hPipeNotificacaoProducao = CreateNamedPipe(
+		L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO",
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		sizeof(bool),
+		sizeof(bool),
+		NMPWAIT_USE_DEFAULT_WAIT,
+		NULL);
+
+	
+
+	DWORD dwTamanhoBuffer = sizeof(buffer);
+	hPipeGestaoProducao = CreateNamedPipe(
+		L"\\\\.\\pipe\\GESTAO",
+		PIPE_ACCESS_DUPLEX,
+		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+		PIPE_UNLIMITED_INSTANCES,
+		dwTamanhoBuffer,
+		dwTamanhoBuffer,
+		NMPWAIT_USE_DEFAULT_WAIT,
+		NULL);
+
+
+
+
+
+
+
+
+	// Criando Semaforos
+	hLista1Livre = CreateSemaphore(NULL, 1, 1, L"Lista1Livre");
+	hLista2Livre = CreateSemaphore(NULL, 1, 1, L"Lista2Livre");
+	hPosicoesLivres = CreateSemaphore(NULL, 100, 100, L"ListaCheia");
+
+	//Criando eventos
+	hEventEsc = CreateEvent(NULL, TRUE, FALSE, L"EventoEsc");
+	hEventLPCP = CreateEvent(NULL, TRUE, FALSE, L"EventoPCP");
+	hEventLSup = CreateEvent(NULL, TRUE, FALSE, L"EventoSup");
+	hEventRetirar = CreateEvent(NULL, TRUE, FALSE, L"EventoRetirar");
+	hEventGestao = CreateEvent(NULL, TRUE, FALSE, L"EventoGestao");
+	hEventProcesso = CreateEvent(NULL, TRUE, FALSE, L"EventoProcesso");
+	
+
+	//Temporizadores
+	hTemporizadorSup = CreateWaitableTimer(NULL, FALSE, L"TemporizadorSup");
+	hTemporizadorPCP = CreateSemaphore(NULL, 0, 1, L"TemporizadorPCP");
+
 
 	// Criando Processo GestaoProducao
 	STARTUPINFO si;
@@ -104,49 +167,15 @@ int main()
 		printf("CreateProcess DadosProcesso failed (%d).\n", GetLastError());
 	}
 
-	// Criando Semaforos
-	hLista1Livre = CreateSemaphore(NULL, 1, 1, L"Lista1Livre");
-	hLista2Livre = CreateSemaphore(NULL, 1, 1, L"Lista2Livre");
-	hPosicoesLivres = CreateSemaphore(NULL, 100, 100, L"ListaCheia");
 
-	//Criando eventos
-	hEventEsc = CreateEvent(NULL, TRUE, FALSE, L"EventoEsc");
-	hEventLPCP = CreateEvent(NULL, TRUE, FALSE, L"EventoPCP");
-	hEventLSup = CreateEvent(NULL, TRUE, FALSE, L"EventoSup");
-	hEventRetirar = CreateEvent(NULL, TRUE, FALSE, L"EventoRetirar");
-	hEventGestao = CreateEvent(NULL, TRUE, FALSE, L"EventoGestao");
-	hEventProcesso = CreateEvent(NULL, TRUE, FALSE, L"EventoProcesso");
-	
-
-	//Temporizadores
-	hTemporizadorSup = CreateWaitableTimer(NULL, FALSE, L"TemporizadorSup");
-	hTemporizadorPCP = CreateSemaphore(NULL, 0, 1, L"TemporizadorPCP");
-
-	//Pipe
-	hPipeNotificacaoProcesso = CreateNamedPipe(
-		L"\\\\.\\pipe\\NOTIFICACAOPROCESSO",
-		PIPE_ACCESS_DUPLEX,
-		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		sizeof(bool),
-		sizeof(bool),
-		0,
-		NULL);
-
-	
-
-	hPipeNotificacaoProducao = CreateNamedPipe(
-		L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO",
-		PIPE_ACCESS_DUPLEX,
-		PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-		PIPE_UNLIMITED_INSTANCES,
-		sizeof(bool),
-		sizeof(bool),
-		0,
-		NULL);
 
 	ConnectNamedPipe(hPipeNotificacaoProducao, NULL);
+
 	ConnectNamedPipe(hPipeNotificacaoProcesso, NULL);
+
+	ConnectNamedPipe(hPipeGestaoProducao, NULL);
+
+
 
 	// Obtém um handle para a saída da console
 	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -234,6 +263,7 @@ int main()
 
 
 	//Desconectando Pipe
+	DisconnectNamedPipe(hPipeGestaoProducao);
 	DisconnectNamedPipe(hPipeNotificacaoProcesso);
 	DisconnectNamedPipe(hPipeNotificacaoProducao);
 	
@@ -243,6 +273,7 @@ int main()
 
 	// Fecha os handles dos objetos de sincronização
 	CloseHandle(hLista1Livre);
+	CloseHandle(hLista2Livre);
 	CloseHandle(hPosicoesLivres);
 	CloseHandle(hOut);
 
@@ -256,6 +287,7 @@ int main()
 	CloseHandle(hTemporizadorSup);
 	CloseHandle(hPipeNotificacaoProcesso);
 	CloseHandle(hPipeNotificacaoProducao);
+	CloseHandle(hPipeGestaoProducao);
 
 
 	return EXIT_SUCCESS;
@@ -450,20 +482,28 @@ DWORD WINAPI ThreadRetirarMensagem() {
 			if (!lista1->Vazia()) {
 				SetConsoleTextAttribute(hOut, WHITE);
 				mensagem = retirarMensagem->RetiraMensagem();
+
+				if (mensagem[0] == '0') {
+					//enviar para Gestão de producao PIPE
+
+					WriteFile(hPipeGestaoProducao,
+						buffer,
+						32,
+						NULL,
+						NULL);
+				}
+				else {
+					WaitForSingleObject(hLista2Livre, INFINITE);
+					if (!lista2->Cheia()) {
+						lista2->Inserir(mensagem);
+						cout << "Adicionando na segunda lista: " << mensagem << endl;
+					}
+					ReleaseSemaphore(hLista2Livre, 1, NULL);
+				}
 			}
 			ReleaseSemaphore(hLista1Livre, 1, NULL);
 			
-			if (mensagem[0] == '0') {
-				//enviar para Gestão de producao PIPE
-			}
-			else {
-				WaitForSingleObject(hLista2Livre, INFINITE);
-				if (!lista2->Cheia()) {
-					lista2->Inserir(mensagem);
-					cout << "Adicionando na segunda lista: " << mensagem << endl;
-				}
-				ReleaseSemaphore(hLista2Livre, 1, NULL);
-			}
+			
 		}
 
 	} while (tipoEvento == 1);
