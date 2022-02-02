@@ -28,6 +28,6 @@ string RetirarMensagem::RetiraMensagem() {
 	if (listaEncadeada->Vazia()) {
 		cout << "LISTA VAZIA!\n";
 	}
-	Sleep(1000);
+	//Sleep(1000);
 	return msg;
 }
