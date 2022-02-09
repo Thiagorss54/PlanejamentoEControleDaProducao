@@ -15,6 +15,7 @@ HANDLE hPipeNotificacaoProcesso;
 
 
 DWORD WINAPI ThreadLimparConsole();
+DWORD WINAPI ThreadReceberMensagens();
 
 bool status = FALSE;
 
@@ -44,10 +45,10 @@ int main()
     //Thread LimparConsole
     
 
-    HANDLE hThread;
+    HANDLE hThreads[2];
     DWORD dwIdLimparConsole;
 
-    hThread = (HANDLE)_beginthreadex(
+    hThreads[0] = (HANDLE)_beginthreadex(
         NULL,
         0,
         (CAST_FUNCTION)ThreadLimparConsole,
@@ -55,10 +56,25 @@ int main()
         0,
         (CAST_LPDWORD)&dwIdLimparConsole);
     //CheckForError(hThread);
-    if (hThread != (HANDLE)-1L)
+    if (hThreads[0] != (HANDLE)-1L)
         printf("Thread LimparConsole criada com Id=%0x\n", dwIdLimparConsole);
     else {
         printf("Erro na criacao da thread LimparConsole ! N = %d Erro = %d\n", 0, errno);
+        exit(0);
+    }
+
+    hThreads[1] = (HANDLE)_beginthreadex(
+        NULL,
+        0,
+        (CAST_FUNCTION)ThreadReceberMensagens,
+        (LPVOID)(INT_PTR)0,
+        0,
+        (CAST_LPDWORD)&dwIdLimparConsole);
+    //CheckForError(hThread);
+    if (hThreads[1] != (HANDLE)-1L)
+        printf("Thread ReceberMensagens criada com Id=%0x\n", dwIdLimparConsole);
+    else {
+        printf("Erro na criacao da thread ReceberMensagens ! N = %d Erro = %d\n", 0, errno);
         exit(0);
     }
 
@@ -82,9 +98,12 @@ int main()
     
 
     //esperar a thread acabar
-    WaitForSingleObject(hThread, INFINITE);
+    WaitForMultipleObjects(2, hThreads, TRUE, INFINITE);
 
-    CloseHandle(hThread);
+
+    for (int i = 0; i < 2; ++i) {
+        CloseHandle(hThreads[i]);
+    }
 
     CloseHandle(hEventProcesso);
     CloseHandle(hPipeNotificacaoProcesso);
@@ -114,4 +133,11 @@ DWORD WINAPI ThreadLimparConsole()
     return 0;
 }
 
+DWORD WINAPI ThreadReceberMensagens() {
+    char buffer[51];
+
+
+
+    _endthreadex(0);
+}
 
