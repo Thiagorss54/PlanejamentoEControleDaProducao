@@ -39,11 +39,12 @@ void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
 	RetirarMensagem* retirarMensagem);
 
-HANDLE hLista1Livre, hLista2Livre, hPosicoesLivresLista1, hPosicoesLivresLista2;		// Semáforo para indicar que a lista circular está livre
+HANDLE hLista1Mutex, hLista2Mutex, hLista1Vazia, hLista2Vazia, hLista1Cheia, hLista2Cheia;		// Semáforo para indicar que a lista circular está livre
 HANDLE hOut;												// Handle para a saída da console
 HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventProcesso;
 HANDLE hTemporizadorSup, hTemporizadorPCP;
 HANDLE hPipeNotificacaoProducao, hPipeNotificacaoProcesso, hPipeGestaoProducao; // handle para pipes
+HANDLE hMemoriaCompartilhada,hEventEnviado,hEventLido; // handle para memoria compartilhada
 
 char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
@@ -58,7 +59,8 @@ bool sendMsg = TRUE;
 bool sendMsgFalse = FALSE;
 
 //Buffer para envio de mensagem por pipe
-char buffer[32] = "teste mensagem\0";
+char buffer[32];
+char finalizar[32] = "FINALIZAR";
 
 // THREAD PRIMÁRIA
 int main()
@@ -99,10 +101,17 @@ int main()
 		NULL);
 
 	// Criando Semaforos
-	hLista1Livre = CreateSemaphore(NULL, 1, 1, L"Lista1Livre");
-	hLista2Livre = CreateSemaphore(NULL, 1, 1, L"Lista2Livre");
-	hPosicoesLivresLista1 = CreateSemaphore(NULL, 100, 100, L"Lista1Cheia");
-	hPosicoesLivresLista2 = CreateSemaphore(NULL, 200, 200, L"Lista2Cheia");
+	hLista1Mutex = CreateSemaphore(NULL, 1, 1, L"Lista1Livre");
+	hLista2Mutex = CreateSemaphore(NULL, 1, 1, L"Lista2Livre");
+	hLista1Vazia = CreateSemaphore(NULL, 100, 100, L"Lista1Vazia");
+	hLista2Vazia = CreateSemaphore(NULL, 200, 200, L"Lista2Vazia");
+	hLista1Cheia = CreateSemaphore(NULL, 0, 100, L"Lista1Cheia");
+	hLista2Cheia = CreateSemaphore(NULL, 0, 200, L"Lista2Cheia");
+	
+
+	//Memoria Compartilhada
+	
+	//hMemoriaCompartilhada = CreateFileMapping
 
 	//Criando eventos
 	hEventEsc = CreateEvent(NULL, TRUE, FALSE, L"EventoEsc");
@@ -256,10 +265,12 @@ int main()
 		CloseHandle(hThreads[i]);
 
 	// Fecha os handles dos objetos de sincronização
-	CloseHandle(hLista1Livre);
-	CloseHandle(hLista2Livre);
-	CloseHandle(hPosicoesLivresLista1);
-	CloseHandle(hPosicoesLivresLista2);
+	CloseHandle(hLista1Mutex);
+	CloseHandle(hLista2Mutex);
+	CloseHandle(hLista1Vazia);
+	CloseHandle(hLista2Vazia);
+	CloseHandle(hLista1Cheia);
+	CloseHandle(hLista2Cheia);
 	CloseHandle(hOut);
 
 	//CloseHandle Event
@@ -274,6 +285,12 @@ int main()
 	CloseHandle(hPipeNotificacaoProducao);
 	CloseHandle(hPipeGestaoProducao);
 
+
+	//CloseHandle Memoria Compartilhada
+
+	CloseHandle(hMemoriaCompartilhada);
+	CloseHandle(hEventEnviado);
+	CloseHandle(hEventLido);
 
 	return EXIT_SUCCESS;
 }
@@ -362,6 +379,11 @@ void ExecutarInstrucao(char instrucao,
 			sizeof(sendMsgFalse),
 			NULL,
 			NULL);
+		WriteFile(hPipeGestaoProducao,
+			&finalizar,
+			sizeof(finalizar),
+			NULL,
+			NULL);
 
 		//Notificar finalizacao por event
 		SetEvent(hEventEsc);
@@ -391,8 +413,8 @@ DWORD WINAPI ThreadTeclado() {
 		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem);
 	} while (instrucao != ESC);
 
-	ReleaseSemaphore(hPosicoesLivresLista1, 100, NULL);
-	ReleaseSemaphore(hPosicoesLivresLista2, 200, NULL);
+	ReleaseSemaphore(hLista1Vazia, 100, NULL);
+	ReleaseSemaphore(hLista2Vazia, 200, NULL);
 
 	std::cout << "Thread Teclado terminando... \n";
 	_endthreadex(0);
@@ -413,10 +435,11 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hTemporizadorSup, INFINITE);
-			WaitForSingleObject(hLista1Livre, 1000);
-			WaitForSingleObject(hPosicoesLivresLista1, INFINITE);
+			WaitForSingleObject(hLista1Mutex, 1000);
+			WaitForSingleObject(hLista1Vazia, INFINITE);
 			leituraSupervisorio->LerMensagem();
-			ReleaseSemaphore(hLista1Livre, 1, NULL);
+			ReleaseSemaphore(hLista1Cheia, 1, NULL);
+			ReleaseSemaphore(hLista1Mutex, 1, NULL);
 		}
 	} while (tipoEvento == 1);
 
@@ -437,10 +460,11 @@ DWORD WINAPI ThreadLeituraPCP() {
 		if (tipoEvento == 1) {
 			tempoDeLeitura = (rand() % 4001) + 1000;
 			WaitForSingleObject(hTemporizadorPCP, tempoDeLeitura);
-			WaitForSingleObject(hLista1Livre, 1000);
-			WaitForSingleObject(hPosicoesLivresLista1, INFINITE);
+			WaitForSingleObject(hLista1Mutex, 1000);
+			WaitForSingleObject(hLista1Vazia, INFINITE);
 			leituraPCP->LerMensagem();
-			ReleaseSemaphore(hLista1Livre, 1, NULL);
+			ReleaseSemaphore(hLista1Cheia, 1, NULL);
+			ReleaseSemaphore(hLista1Mutex, 1, NULL);
 
 		}
 	} while (tipoEvento == 1);
@@ -460,29 +484,33 @@ DWORD WINAPI ThreadRetirarMensagem() {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 		if (tipoEvento == 1) {
-			WaitForSingleObject(hLista1Livre, 1000);
-			if (!lista1->Vazia()) {
-				SetConsoleTextAttribute(hOut, WHITE);
-				mensagem = retirarMensagem->RetiraMensagem();
-				ReleaseSemaphore(hPosicoesLivresLista1, 1, NULL);
+			WaitForSingleObject(hLista1Mutex, 1000);
+			WaitForSingleObject(hLista1Cheia, INFINITE);
+			SetConsoleTextAttribute(hOut, WHITE);
+			mensagem = retirarMensagem->RetiraMensagem();
+			ReleaseSemaphore(hLista1Vazia, 1, NULL);
+			ReleaseSemaphore(hLista1Mutex, 1, NULL);
 
-				if (mensagem[0] == '0') {
-					//enviar para Gestão de producao PIPE
-					strcpy_s(buffer, mensagem.c_str());
-					WriteFile(hPipeGestaoProducao,
-						buffer,
-						32,
-						NULL,
-						NULL);
-				}
-				else {
-					WaitForSingleObject(hLista2Livre, 1000);
-					WaitForSingleObject(hPosicoesLivresLista2, INFINITE);
-					std::cout << "Adicionando na segunda lista: " << mensagem << endl;
-					ReleaseSemaphore(hLista2Livre, 1, NULL);
-				}
+			if (mensagem[0] == '0') {
+				//enviar para Gestão de producao PIPE
+				strcpy_s(buffer, mensagem.c_str());
+				WriteFile(hPipeGestaoProducao,
+					buffer,
+					32,
+					NULL,
+					NULL);
+				FlushFileBuffers(hPipeGestaoProducao);
 			}
-			ReleaseSemaphore(hLista1Livre, 1, NULL);
+			else {
+				WaitForSingleObject(hLista2Mutex, 1000);
+				WaitForSingleObject(hLista2Vazia, INFINITE);
+				lista2->Inserir(mensagem);
+				std::cout << "Adicionando na segunda lista: " << mensagem << endl;
+				ReleaseSemaphore(hLista2Cheia, 1, NULL);
+				ReleaseSemaphore(hLista2Mutex, 1, NULL);
+			}
+
+			
 		}
 
 	} while (tipoEvento == 1);

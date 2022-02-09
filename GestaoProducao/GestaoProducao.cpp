@@ -154,11 +154,11 @@ DWORD WINAPI ThreadReceberMensagens() {
 				NULL,
 				NULL);
 
-			if (buffer != "FINALIZAR") {
+			if (buffer[0] != 'F') {
 				std::cout << buffer << std::endl;
 			}
 		}
-	} while (buffer != "FINALIZAR");
+	} while (buffer[0] != 'F');
 	std::cout << "Thread ReceberMensagem terminando ...\n";
 	_endthreadex(0);
 
