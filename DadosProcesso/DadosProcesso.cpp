@@ -139,5 +139,6 @@ DWORD WINAPI ThreadReceberMensagens() {
 
 
     _endthreadex(0);
+    return 0;
 }
 
