@@ -142,7 +142,13 @@
     <ClCompile Include="GestaoProducao.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\LeituraTeclado\CheckForError.h" />
     <ClInclude Include="GestaoProducao.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PlanejamentoEControleDaProducao\PlanejamentoEControleDaProducao.vcxproj">
+      <Project>{7f95dfd1-c816-4b41-a847-b8c5db356602}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

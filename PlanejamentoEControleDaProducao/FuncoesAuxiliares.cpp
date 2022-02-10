@@ -1,4 +1,22 @@
 #include "FuncoesAuxiliares.h"
+#include <vector>
+#include <iostream>
+
+std::vector<std::string> FuncoesAuxiliares::SepararString(std::string mensagem, std::string delimitador) {
+    std::vector<std::string> resultado;
+
+    unsigned inicio = 0U;
+    auto fim = mensagem.find(delimitador);
+
+    while (fim != std::string::npos) {
+        std::cout << mensagem.substr(inicio, fim - inicio) << std::endl;
+        resultado.push_back(mensagem.substr(inicio, fim - inicio));
+        inicio = (int)(fim + delimitador.length());
+        fim = mensagem.find(delimitador, inicio);
+    }
+
+    return resultado;
+}
 
 std::string FuncoesAuxiliares::GetHorario()
 {

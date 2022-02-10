@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <process.h>
 
+#define _CHECKERROR 1
+#include "../GestaoProducao/CheckForError.h"
+
 typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
 													// _beginthreadex
 typedef unsigned* CAST_LPDWORD;
@@ -11,8 +14,8 @@ typedef unsigned* CAST_LPDWORD;
 HANDLE hEventGestao;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProducao, hPipeGestaoProducao;
-
-
+HANDLE hEventGestaoProducaoSent, hEventGestaoProducaoRead;
+HANDLE hEventRecebeMsg;
 
 DWORD WINAPI ThreadLimparConsole();
 DWORD WINAPI ThreadReceberMensagens();
@@ -26,6 +29,12 @@ int main()
 
 	hEventGestao = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoGestao");
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
+	hEventGestaoProducaoSent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoSent");
+	hEventGestaoProducaoRead = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoRead");
+
+
+	hEventRecebeMsg = CreateEvent(NULL, TRUE, FALSE, L"RecebeMsg");
+
 	HANDLE Events[2] = { hEventEsc, hEventGestao };
 	DWORD ret;
 	int tipoEvento;
@@ -93,14 +102,13 @@ int main()
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 		if (tipoEvento == 1) {
-			std::cout << "STATUS:  ";
+			status = !status;
 			if (status) {
-				std::cout << "BLOQUEADO\n";
+				SetEvent(hEventRecebeMsg);
 			}
 			else {
-				std::cout << "ATIVO\n";
+				ResetEvent(hEventRecebeMsg);
 			}
-			status = !status;
 		}
 
 	} while (tipoEvento == 1);
@@ -118,11 +126,11 @@ int main()
 	CloseHandle(hPipeNotificacaoProducao);
 	CloseHandle(hEventGestao);
 	CloseHandle(hPipeGestaoProducao);
+	CloseHandle(hEventRecebeMsg);
 }
 
 DWORD WINAPI ThreadLimparConsole()
 {
-
 	bool result;
 	do {
 		ReadFile(hPipeNotificacaoProducao,
@@ -130,7 +138,7 @@ DWORD WINAPI ThreadLimparConsole()
 			sizeof(result),
 			NULL,
 			NULL);
-		
+
 		if (result != FALSE) {
 			system("cls");
 		}
@@ -143,11 +151,19 @@ DWORD WINAPI ThreadLimparConsole()
 
 	return 0;
 }
-DWORD WINAPI ThreadReceberMensagens() {
 
+DWORD WINAPI ThreadReceberMensagens() {
+	HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg };
+	DWORD ret;
+	int tipoEvento;
 	char buffer[32];
 	do {
-		if (status) {
+		ret = WaitForMultipleObjects(2, EventsR, FALSE, INFINITE);
+		tipoEvento = ret - WAIT_OBJECT_0;
+
+		if (tipoEvento == 1) {
+			WaitForSingleObject(hEventGestaoProducaoSent, INFINITE);
+			ResetEvent(hEventGestaoProducaoSent);
 			ReadFile(hPipeGestaoProducao,
 				buffer,
 				sizeof(buffer),
@@ -157,11 +173,10 @@ DWORD WINAPI ThreadReceberMensagens() {
 			if (buffer[0] != 'F') {
 				std::cout << buffer << std::endl;
 			}
+			SetEvent(hEventGestaoProducaoRead);
 		}
-	} while (buffer[0] != 'F');
+	} while (tipoEvento == 1);
 	std::cout << "Thread ReceberMensagem terminando ...\n";
 	_endthreadex(0);
-
-
 	return 0;
 }

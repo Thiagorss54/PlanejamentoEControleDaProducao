@@ -45,6 +45,7 @@ HANDLE hEventLSup, hEventLPCP, hEventEsc, hEventRetirar, hEventGestao, hEventPro
 HANDLE hTemporizadorSup, hTemporizadorPCP;
 HANDLE hPipeNotificacaoProducao, hPipeNotificacaoProcesso, hPipeGestaoProducao; // handle para pipes
 HANDLE hMemoriaCompartilhada,hEventEnviado,hEventLido; // handle para memoria compartilhada
+HANDLE hEventGestaoProducaoSent, hEventGestaoProducaoRead;
 
 char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
@@ -115,11 +116,21 @@ int main()
 
 	//Criando eventos
 	hEventEsc = CreateEvent(NULL, TRUE, FALSE, L"EventoEsc");
+	CheckForError(hEventEsc);
 	hEventLPCP = CreateEvent(NULL, TRUE, FALSE, L"EventoPCP");
+	CheckForError(hEventLPCP);
 	hEventLSup = CreateEvent(NULL, TRUE, FALSE, L"EventoSup");
+	CheckForError(hEventLSup);
 	hEventRetirar = CreateEvent(NULL, TRUE, FALSE, L"EventoRetirar");
+	CheckForError(hEventRetirar);
 	hEventGestao = CreateEvent(NULL, TRUE, FALSE, L"EventoGestao");
+	CheckForError(hEventGestao);
 	hEventProcesso = CreateEvent(NULL, TRUE, FALSE, L"EventoProcesso");
+	CheckForError(hEventProcesso);
+	hEventGestaoProducaoSent = CreateEvent(NULL, FALSE, FALSE, L"GestaoProducaoSent");
+	CheckForError(hEventGestaoProducaoSent);
+	hEventGestaoProducaoRead = CreateEvent(NULL, FALSE, FALSE, L"GestaoProducaoRead");
+	CheckForError(hEventGestaoProducaoRead);
 
 	//Temporizadores
 	hTemporizadorSup = CreateWaitableTimer(NULL, FALSE, L"TemporizadorSup");
@@ -279,6 +290,8 @@ int main()
 	CloseHandle(hEventLSup);
 	CloseHandle(hEventRetirar);
 	CloseHandle(hEventGestao);
+	CloseHandle(hEventGestaoProducaoSent);
+	CloseHandle(hEventGestaoProducaoRead);
 	CloseHandle(hTemporizadorPCP);
 	CloseHandle(hTemporizadorSup);
 	CloseHandle(hPipeNotificacaoProcesso);
@@ -379,6 +392,7 @@ void ExecutarInstrucao(char instrucao,
 			sizeof(sendMsgFalse),
 			NULL,
 			NULL);
+		SetEvent(hEventGestaoProducaoSent);
 		WriteFile(hPipeGestaoProducao,
 			&finalizar,
 			sizeof(finalizar),
@@ -493,6 +507,7 @@ DWORD WINAPI ThreadRetirarMensagem() {
 
 			if (mensagem[0] == '0') {
 				//enviar para Gestão de producao PIPE
+				SetEvent(hEventGestaoProducaoSent);
 				strcpy_s(buffer, mensagem.c_str());
 				WriteFile(hPipeGestaoProducao,
 					buffer,
@@ -500,6 +515,9 @@ DWORD WINAPI ThreadRetirarMensagem() {
 					NULL,
 					NULL);
 				FlushFileBuffers(hPipeGestaoProducao);
+
+				WaitForSingleObject(hEventGestaoProducaoRead, INFINITE);
+				ResetEvent(hEventGestaoProducaoRead);
 			}
 			else {
 				WaitForSingleObject(hLista2Mutex, 1000);

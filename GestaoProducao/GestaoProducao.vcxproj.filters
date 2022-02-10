@@ -23,5 +23,8 @@
     <ClInclude Include="GestaoProducao.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\LeituraTeclado\CheckForError.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
