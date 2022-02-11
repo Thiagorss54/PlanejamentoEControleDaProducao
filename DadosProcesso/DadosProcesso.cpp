@@ -11,6 +11,8 @@ typedef unsigned* CAST_LPDWORD;
 HANDLE hEventProcesso;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProcesso;
+HANDLE hFileLista2;
+HANDLE hEventRecebeMsg;
 
 
 
@@ -25,6 +27,10 @@ int main()
     
     hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
     hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
+    hEventRecebeMsg = CreateEvent(NULL, TRUE, FALSE, L"RecebeMsgDadosProcesso");
+
+
+
     HANDLE Events[2] = { hEventEsc, hEventProcesso };
     DWORD ret;
     int tipoEvento;
@@ -42,6 +48,18 @@ int main()
         FILE_ATTRIBUTE_NORMAL,
         NULL);
 
+    //Abrindo o arquivo para a lista 2
+    hFileLista2 = CreateFile(L"..\\FileDadosProcesso.txt",
+        GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE,
+        NULL,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+
+    if (hFileLista2 == INVALID_HANDLE_VALUE) {
+        std::cout << "ERROR -> " << GetLastError() << std::endl;
+    }
     //Thread LimparConsole
     
 
@@ -84,14 +102,17 @@ int main()
         ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
         tipoEvento = ret - WAIT_OBJECT_0;
         if (tipoEvento == 1) {
+            status = !status;
             std::cout << "STATUS:  ";
             if (status) {
-                std::cout << "BLOQUEADO\n";
+                std::cout << "ATIVO\n" ;
+                SetEvent(hEventRecebeMsg);
             }
             else {
-                std::cout << "ATIVO\n" ;
+                std::cout << "BLOQUEADO\n";
+                ResetEvent(hEventRecebeMsg);
             }
-            status = !status;
+            
         }
 
     } while (tipoEvento == 1);
@@ -107,6 +128,8 @@ int main()
 
     CloseHandle(hEventProcesso);
     CloseHandle(hPipeNotificacaoProcesso);
+    CloseHandle(hEventRecebeMsg);
+    CloseHandle(hFileLista2);
   
 }
 
@@ -134,11 +157,36 @@ DWORD WINAPI ThreadLimparConsole()
 }
 
 DWORD WINAPI ThreadReceberMensagens() {
-    char buffer[51];
+    
+    HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg };
+    DWORD ret;
+    int tipoEvento;
+    char buffer[51]="";
+    DWORD szBuffer = sizeof(buffer);
+    DWORD dwNoBytesRead;
+    do {
+        ret = WaitForMultipleObjects(2, EventsR, FALSE, INFINITE);
+        tipoEvento = ret - WAIT_OBJECT_0;
 
+        if (tipoEvento == 1) {
+           
+            if (ReadFile(hFileLista2,
+                buffer,
+                szBuffer,
+                &dwNoBytesRead,
+                NULL)) {
+                std::cout << "Success\n" << std::endl;
+            }
+            else std::cout << "ERROR -> " << GetLastError() << std::endl;
 
-
+            std::cout << buffer << std::endl;
+            std::cout << dwNoBytesRead << std::endl;
+            //SetEvent(hEventGestaoProducaoRead);
+        }
+    } while (tipoEvento == 1);
+    std::cout << "Thread ReceberMensagem terminando ...\n";
     _endthreadex(0);
+    return 0;
     return 0;
 }
 

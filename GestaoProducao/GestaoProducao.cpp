@@ -39,7 +39,8 @@ int main()
 	DWORD ret;
 	int tipoEvento;
 
-
+	WaitNamedPipe(L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO", NMPWAIT_WAIT_FOREVER);
+	WaitNamedPipe(L"\\\\.\\pipe\\GESTAO", NMPWAIT_WAIT_FOREVER);
 
 	//Pipe
 	hPipeNotificacaoProducao = CreateFile(
@@ -142,7 +143,6 @@ DWORD WINAPI ThreadLimparConsole()
 		if (result != FALSE) {
 			system("cls");
 		}
-		printf("resutl -> %d\n", result);
 
 	} while (result != FALSE);
 
@@ -153,27 +153,27 @@ DWORD WINAPI ThreadLimparConsole()
 }
 
 DWORD WINAPI ThreadReceberMensagens() {
-	HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg };
+	HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg};
 	DWORD ret;
 	int tipoEvento;
 	char buffer[32];
+	DWORD szBuffer = sizeof(buffer);
+	DWORD dwNoBytesRead;
 	do {
 		ret = WaitForMultipleObjects(2, EventsR, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 
 		if (tipoEvento == 1) {
-			WaitForSingleObject(hEventGestaoProducaoSent, INFINITE);
-			ResetEvent(hEventGestaoProducaoSent);
+			//WaitForSingleObject(hEventGestaoProducaoSent, INFINITE);
+			//ResetEvent(hEventGestaoProducaoSent);
 			ReadFile(hPipeGestaoProducao,
 				buffer,
-				sizeof(buffer),
-				NULL,
+				szBuffer,
+				&dwNoBytesRead,
 				NULL);
 
-			if (buffer[0] != 'F') {
-				std::cout << buffer << std::endl;
-			}
-			SetEvent(hEventGestaoProducaoRead);
+			std::cout << buffer << std::endl;
+			//SetEvent(hEventGestaoProducaoRead);
 		}
 	} while (tipoEvento == 1);
 	std::cout << "Thread ReceberMensagem terminando ...\n";
