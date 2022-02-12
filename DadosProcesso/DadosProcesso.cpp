@@ -14,8 +14,9 @@ typedef unsigned* CAST_LPDWORD;
 HANDLE hEventProcesso;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProcesso;
-HANDLE hFileLista2;
 HANDLE hEventRecebeMsg;
+HANDLE hFileLista2;
+HANDLE hLista2Mutex;
 
 void ImprimirMensagem(std::string buffer);
 
@@ -27,20 +28,12 @@ bool status = FALSE;
 int main()
 {
     SetConsoleTitle(L"Dados do Processo");
-    
+
     hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
     hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
     hEventRecebeMsg = CreateEvent(NULL, TRUE, FALSE, L"RecebeMsgDadosProcesso");
+    hLista2Mutex = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Mutex");
 
-
-
-    HANDLE Events[2] = { hEventEsc, hEventProcesso };
-    DWORD ret;
-    int tipoEvento;
-
-    
-    
-    
     //Pipe
     hPipeNotificacaoProcesso = CreateFile(
         L"\\\\.\\pipe\\NOTIFICACAOPROCESSO",
@@ -64,7 +57,7 @@ int main()
         std::cout << "ERROR -> " << GetLastError() << std::endl;
     }
     //Thread LimparConsole
-    
+
 
     HANDLE hThreads[2];
     DWORD dwIdLimparConsole;
@@ -99,6 +92,9 @@ int main()
         exit(0);
     }
 
+    HANDLE Events[2] = { hEventEsc, hEventProcesso };
+    DWORD ret;
+    int tipoEvento;
 
 
     do {
@@ -108,18 +104,18 @@ int main()
             status = !status;
             std::cout << "STATUS:  ";
             if (status) {
-                std::cout << "ATIVO\n" ;
+                std::cout << "ATIVO\n";
                 SetEvent(hEventRecebeMsg);
             }
             else {
                 std::cout << "BLOQUEADO\n";
                 ResetEvent(hEventRecebeMsg);
             }
-            
+
         }
 
     } while (tipoEvento == 1);
-    
+
 
     //esperar a thread acabar
     WaitForMultipleObjects(2, hThreads, TRUE, INFINITE);
@@ -133,11 +129,11 @@ int main()
     CloseHandle(hPipeNotificacaoProcesso);
     CloseHandle(hEventRecebeMsg);
     CloseHandle(hFileLista2);
-  
+
 }
 
 DWORD WINAPI ThreadLimparConsole()
-{   
+{
 
     bool result;
     do {
@@ -155,16 +151,16 @@ DWORD WINAPI ThreadLimparConsole()
 
     std::cout << "Thread LimparConsole terminando ...\n";
     _endthreadex(0);
-    
+
     return 0;
 }
 
 DWORD WINAPI ThreadReceberMensagens() {
-    
+
     HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg };
     DWORD ret;
     int tipoEvento;
-    char buffer[51]="";
+    char buffer[51] = "";
     DWORD szBuffer = sizeof(buffer);
     DWORD dwNoBytesRead;
     do {
@@ -172,18 +168,15 @@ DWORD WINAPI ThreadReceberMensagens() {
         tipoEvento = ret - WAIT_OBJECT_0;
 
         if (tipoEvento == 1) {
-           
-            if (ReadFile(hFileLista2,
+
+            ReadFile(hFileLista2,
                 buffer,
                 szBuffer,
                 &dwNoBytesRead,
-                NULL)) {
-                std::cout << "Success\n" << std::endl;
-            }
-            else std::cout << "ERROR -> " << GetLastError() << std::endl;
+                NULL);
+
 
             std::cout << buffer << std::endl;
-            std::cout << dwNoBytesRead << std::endl;
             //SetEvent(hEventGestaoProducaoRead);
         }
     } while (tipoEvento == 1);
