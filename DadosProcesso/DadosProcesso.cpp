@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <process.h>
+#include <vector>
+
+#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
                                                     // _beginthreadex
@@ -14,7 +17,7 @@ HANDLE hPipeNotificacaoProcesso;
 HANDLE hFileLista2;
 HANDLE hEventRecebeMsg;
 
-
+void ImprimirMensagem(std::string buffer);
 
 DWORD WINAPI ThreadLimparConsole();
 DWORD WINAPI ThreadReceberMensagens();
@@ -187,6 +190,11 @@ DWORD WINAPI ThreadReceberMensagens() {
     std::cout << "Thread ReceberMensagem terminando ...\n";
     _endthreadex(0);
     return 0;
-    return 0;
+}
+
+void ImprimirMensagem(std::string buffer) {
+    std::vector<std::string> msg;
+    msg = FuncoesAuxiliares::SepararString(buffer, "#");
+    std::cout << "NSEQ: " << msg[1] << " TZ1: " << msg[2] << " TZ2: " << msg[3] << " TZ3: " << msg[4] << " VOL: " << msg[5] << " PRES: " << msg[6] << " HORA: " << msg[7] << std::endl;
 }
 

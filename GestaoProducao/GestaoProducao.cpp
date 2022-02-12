@@ -3,13 +3,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <process.h>
+#include <vector>
+#include <string>
 
 #define _CHECKERROR 1
 #include "../GestaoProducao/CheckForError.h"
+#include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
 													// _beginthreadex
 typedef unsigned* CAST_LPDWORD;
+
+void ImprimirMensagem(std::string buffer);
 
 HANDLE hEventGestao;
 HANDLE hEventEsc;
@@ -19,6 +24,7 @@ HANDLE hEventRecebeMsg;
 
 DWORD WINAPI ThreadLimparConsole();
 DWORD WINAPI ThreadReceberMensagens();
+
 
 
 bool status = FALSE;
@@ -153,7 +159,7 @@ DWORD WINAPI ThreadLimparConsole()
 }
 
 DWORD WINAPI ThreadReceberMensagens() {
-	HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg};
+	HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg };
 	DWORD ret;
 	int tipoEvento;
 	char buffer[32];
@@ -172,11 +178,18 @@ DWORD WINAPI ThreadReceberMensagens() {
 				&dwNoBytesRead,
 				NULL);
 
-			std::cout << buffer << std::endl;
+			ImprimirMensagem(buffer);
+			//std::cout << buffer << std::endl;
 			//SetEvent(hEventGestaoProducaoRead);
 		}
 	} while (tipoEvento == 1);
 	std::cout << "Thread ReceberMensagem terminando ...\n";
 	_endthreadex(0);
 	return 0;
+}
+
+void ImprimirMensagem(std::string buffer) {
+	std::vector<std::string> msg;
+	msg = FuncoesAuxiliares::SepararString(buffer, "#");
+	std::cout << "NSEQ: " << msg[1] << " OP: " << msg[2] << " HORA DE INICIO: " << msg[3] << " DURACAO: " << msg[4] << std::endl;
 }
