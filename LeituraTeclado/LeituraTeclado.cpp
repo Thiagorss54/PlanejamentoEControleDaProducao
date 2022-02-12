@@ -118,17 +118,14 @@ int main()
 	cout << "Success" << endl;
 
 	// Criando Semaforos
-	hLista1Mutex = CreateSemaphore(NULL, 1, 1, L"Lista1Livre");
-	hLista2Mutex = CreateSemaphore(NULL, 1, 1, L"Lista2Livre");
+	hLista1Mutex = CreateSemaphore(NULL, 1, 1, L"Lista1Mutex");
+	hLista2Mutex = CreateSemaphore(NULL, 1, 1, L"Lista2Mutex");
 	hLista1Vazia = CreateSemaphore(NULL, 100, 100, L"Lista1Vazia");
 	hLista2Vazia = CreateSemaphore(NULL, 200, 200, L"Lista2Vazia");
 	hLista1Cheia = CreateSemaphore(NULL, 0, 100, L"Lista1Cheia");
 	hLista2Cheia = CreateSemaphore(NULL, 0, 200, L"Lista2Cheia");
 	
 
-	//Memoria Compartilhada
-	
-	//hMemoriaCompartilhada = CreateFileMapping
 
 	//Criando eventos
 	hEventEsc = CreateEvent(NULL, TRUE, FALSE, L"EventoEsc");
@@ -541,9 +538,16 @@ DWORD WINAPI ThreadRetirarMensagem() {
 					&dwNoBytesWrite,
 					NULL);
 				numeroDeMensagensDadosProcesso++;
-				dwFilePointerPos = numeroDeMensagensDadosProcesso *szMensagemParaDadosProcesso;
-				SetFilePointer(hFileLista2, dwFilePointerPos, NULL, FILE_BEGIN);
 				
+				if (numeroDeMensagensDadosProcesso < 100) {
+					dwFilePointerPos = numeroDeMensagensDadosProcesso * szMensagemParaDadosProcesso;
+					SetFilePointer(hFileLista2, dwFilePointerPos, NULL, FILE_BEGIN);
+					
+				}
+				else {
+					SetFilePointer(hFileLista2, 0, NULL, FILE_BEGIN);
+					numeroDeMensagensDadosProcesso = 0;
+				}
 
 
 
