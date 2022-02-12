@@ -14,8 +14,9 @@ typedef unsigned* CAST_LPDWORD;
 HANDLE hEventProcesso;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProcesso;
-HANDLE hFileLista2;
 HANDLE hEventRecebeMsg;
+HANDLE hFileLista2;
+HANDLE hLista2Mutex;
 
 void ImprimirMensagem(std::string buffer);
 
@@ -31,16 +32,8 @@ int main()
     hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
     hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
     hEventRecebeMsg = CreateEvent(NULL, TRUE, FALSE, L"RecebeMsgDadosProcesso");
+    hLista2Mutex = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Mutex");
 
-
-
-    HANDLE Events[2] = { hEventEsc, hEventProcesso };
-    DWORD ret;
-    int tipoEvento;
-
-    
-    
-    
     //Pipe
     hPipeNotificacaoProcesso = CreateFile(
         L"\\\\.\\pipe\\NOTIFICACAOPROCESSO",
@@ -99,6 +92,9 @@ int main()
         exit(0);
     }
 
+    HANDLE Events[2] = { hEventEsc, hEventProcesso };
+    DWORD ret;
+    int tipoEvento;
 
 
     do {
@@ -173,17 +169,14 @@ DWORD WINAPI ThreadReceberMensagens() {
 
         if (tipoEvento == 1) {
            
-            if (ReadFile(hFileLista2,
+           ReadFile(hFileLista2,
                 buffer,
                 szBuffer,
                 &dwNoBytesRead,
-                NULL)) {
-                std::cout << "Success\n" << std::endl;
-            }
-            else std::cout << "ERROR -> " << GetLastError() << std::endl;
+                NULL);
+
 
             std::cout << buffer << std::endl;
-            std::cout << dwNoBytesRead << std::endl;
             //SetEvent(hEventGestaoProducaoRead);
         }
     } while (tipoEvento == 1);
