@@ -9,11 +9,12 @@ std::vector<std::string> FuncoesAuxiliares::SepararString(std::string mensagem, 
     auto fim = mensagem.find(delimitador);
 
     while (fim != std::string::npos) {
-        std::cout << mensagem.substr(inicio, fim - inicio) << std::endl;
+        //std::cout << mensagem.substr(inicio, fim - inicio) << std::endl;
         resultado.push_back(mensagem.substr(inicio, fim - inicio));
         inicio = (int)(fim + delimitador.length());
         fim = mensagem.find(delimitador, inicio);
     }
+    resultado.push_back(mensagem.substr(inicio, mensagem.length()));
 
     return resultado;
 }

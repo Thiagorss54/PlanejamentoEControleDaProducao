@@ -423,6 +423,7 @@ void GerarDashboard()
 	std::cout << "Instrucao 'e' - GestaoProducao \n";
 	std::cout << "Instrucao 'esc' - Encerrar processos \n";
 }
+
 DWORD WINAPI ThreadTeclado() {
 	//system("cls");
 	GerarDashboard();
