@@ -24,10 +24,5 @@ bool RetirarMensagem::GetStatus() {
 
 string RetirarMensagem::RetiraMensagem() {
 	string msg = listaEncadeada->Remover();
-	cout << "Mensagem Retirada: " << msg << endl;
-	if (listaEncadeada->Vazia()) {
-		cout << "LISTA VAZIA!\n";
-	}
-	//Sleep(1000);
 	return msg;
 }

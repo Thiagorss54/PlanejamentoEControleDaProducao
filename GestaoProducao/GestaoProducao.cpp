@@ -20,7 +20,6 @@ HANDLE hEventGestao;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProducao, hPipeGestaoProducao;
 HANDLE hEventGestaoProducaoSent, hEventGestaoProducaoRead;
-HANDLE hEventRecebeMsg;
 
 DWORD WINAPI ThreadLimparConsole();
 DWORD WINAPI ThreadReceberMensagens();
@@ -38,12 +37,6 @@ int main()
 	hEventGestaoProducaoSent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoSent");
 	hEventGestaoProducaoRead = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoRead");
 
-
-	hEventRecebeMsg = CreateEvent(NULL, TRUE, FALSE, L"RecebeMsg");
-
-	HANDLE Events[2] = { hEventEsc, hEventGestao };
-	DWORD ret;
-	int tipoEvento;
 
 	WaitNamedPipe(L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO", NMPWAIT_WAIT_FOREVER);
 	WaitNamedPipe(L"\\\\.\\pipe\\GESTAO", NMPWAIT_WAIT_FOREVER);
@@ -104,22 +97,8 @@ int main()
 		exit(0);
 	}
 
-
-	do {
-		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
-		tipoEvento = ret - WAIT_OBJECT_0;
-		if (tipoEvento == 1) {
-			status = !status;
-			if (status) {
-				SetEvent(hEventRecebeMsg);
-			}
-			else {
-				ResetEvent(hEventRecebeMsg);
-			}
-		}
-
-	} while (tipoEvento == 1);
-
+	system("cls");
+	WaitForSingleObject(hEventEsc, INFINITE);
 
 	//esperar a thread acabar
 	WaitForMultipleObjects(2, hThreads, TRUE, INFINITE);
@@ -133,7 +112,6 @@ int main()
 	CloseHandle(hPipeNotificacaoProducao);
 	CloseHandle(hEventGestao);
 	CloseHandle(hPipeGestaoProducao);
-	CloseHandle(hEventRecebeMsg);
 }
 
 DWORD WINAPI ThreadLimparConsole()
@@ -159,14 +137,14 @@ DWORD WINAPI ThreadLimparConsole()
 }
 
 DWORD WINAPI ThreadReceberMensagens() {
-	HANDLE EventsR[2] = { hEventEsc, hEventRecebeMsg };
+	HANDLE Events[2] = { hEventEsc, hEventGestao };
 	DWORD ret;
 	int tipoEvento;
 	char buffer[32];
 	DWORD szBuffer = sizeof(buffer);
 	DWORD dwNoBytesRead;
 	do {
-		ret = WaitForMultipleObjects(2, EventsR, FALSE, INFINITE);
+		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 
 		if (tipoEvento == 1) {
@@ -191,5 +169,8 @@ DWORD WINAPI ThreadReceberMensagens() {
 void ImprimirMensagem(std::string buffer) {
 	std::vector<std::string> msg;
 	msg = FuncoesAuxiliares::SepararString(buffer, "#");
+	if (msg.size() != 5) {
+		return;
+	}
 	std::cout << "NSEQ: " << msg[1] << " OP: " << msg[2] << " HORA DE INICIO: " << msg[3] << " DURACAO: " << msg[4] << std::endl;
 }
