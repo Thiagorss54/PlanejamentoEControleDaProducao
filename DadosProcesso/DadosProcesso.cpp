@@ -52,7 +52,7 @@ int main()
         NULL);
 
     //Abrindo o arquivo para a lista 2
-    hFileLista2 = CreateFile(L"..\\FileDadosProcesso.txt",
+    hFileLista2 = CreateFile(L"..\\..\\FileDadosProcesso.txt",
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE,
         NULL,
