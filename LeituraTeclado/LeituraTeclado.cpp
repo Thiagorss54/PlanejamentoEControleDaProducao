@@ -33,7 +33,9 @@ DWORD WINAPI ThreadRetirarMensagem();
 void ExecutarInstrucao(char instrucao,
 	LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	RetirarMensagem* retirarMensagem);
+	RetirarMensagem* retirarMensagem,
+	bool &statusS,
+	bool &statusE);
 
 void GerarDashboard(LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
@@ -46,11 +48,9 @@ HANDLE hTemporizadorSup, hTemporizadorPCP;
 HANDLE hPipeNotificacaoProducao, hPipeNotificacaoProcesso, hPipeGestaoProducao; // handle para pipes
 HANDLE hFileLista2; //Handle para arquivo
 
-//HANDLE hMemoriaCompartilhada,hEventEnviado,hEventLido; // handle para memoria compartilhada
 
 char instrucao;
 ListaEncadeada* lista1 = new ListaEncadeada(100);
-//ListaEncadeada* lista2 = new ListaEncadeada(200);
 LeituraSupervisorio* leituraSupervisorio = new LeituraSupervisorio(lista1);
 LeituraPCP* leituraPCP = new LeituraPCP(lista1);
 RetirarMensagem* retirarMensagem = new RetirarMensagem(lista1);
@@ -59,6 +59,10 @@ using namespace std;
 //Variaveis para pipes de notificacao
 bool sendMsg = TRUE;
 bool sendMsgFalse = FALSE;
+
+//Variavel de status de exibicao de processo e producao
+bool statusS = FALSE;
+bool statusE = FALSE;
 
 //Buffer para envio de mensagem por pipe
 char buffer[32];
@@ -321,8 +325,11 @@ int main()
 void ExecutarInstrucao(char instrucao,
 	LeituraSupervisorio* leituraSupervisorio,
 	LeituraPCP* leituraPCP,
-	RetirarMensagem* retirarMensagem)
+	RetirarMensagem* retirarMensagem,
+	bool &statusS,
+	bool &statusE)
 {
+	
 	switch (tolower(instrucao)) {
 	case ('l'):
 		if (leituraSupervisorio->GetStatus()) {
@@ -367,11 +374,33 @@ void ExecutarInstrucao(char instrucao,
 		break;
 
 	case ('s'):
-		PulseEvent(hEventProcesso);
+		if (statusS) {
+			ResetEvent(hEventProcesso);
+			SetConsoleTextAttribute(hOut, HLRED);
+			std::cout << "Exibicao de dados do processo desativada \n";
+		}
+		else {
+			SetEvent(hEventProcesso);
+			SetConsoleTextAttribute(hOut, HLGREEN);
+			std::cout << "Exibicao de dados do processo ativada \n";
+		}
+		statusS = !statusS;
+
+		//PulseEvent(hEventProcesso);
 		break;
 
 	case ('e'):
-		PulseEvent(hEventGestao);
+		if (statusE) {
+			ResetEvent(hEventGestao);
+			SetConsoleTextAttribute(hOut, HLRED);
+			std::cout << "Exibicao de dados da producao desativada \n";
+		}
+		else {
+			SetEvent(hEventGestao);
+			SetConsoleTextAttribute(hOut, HLGREEN);
+			std::cout << "Exibicao de dados da producao ativada \n";
+		}
+		statusE = !statusE;
 		break;
 	case ('1'):
 		WriteFile(hPipeNotificacaoProcesso,
@@ -403,6 +432,11 @@ void ExecutarInstrucao(char instrucao,
 			NULL);
 		//Notificar finalizacao por event
 		SetEvent(hEventEsc);
+
+		ReleaseSemaphore(hLista1Vazia, 1, NULL);
+		ReleaseSemaphore(hLista2Vazia, 1, NULL);
+		ReleaseSemaphore(hLista1Cheia, 1, NULL);
+		ReleaseSemaphore(hLista2Cheia, 1, NULL);
 		break;
 
 	default:
@@ -415,23 +449,24 @@ void GerarDashboard()
 	SetConsoleTextAttribute(hOut, WHITE);
 	std::cout << "Instrucao 'l' - Leitura do Supervisorio \n";
 	std::cout << "Instrucao 'p' - Leitura do PCP \n";
-	std::cout << "Instrucao 'r' - CapturaMensagens \n";
-	std::cout << "Instrucao 's' - DadosProcesso \n";
-	std::cout << "Instrucao 'e' - GestaoProducao \n";
+	std::cout << "Instrucao 'r' - Captura de Mensagens\n";
+	std::cout << "Instrucao 's' - Dados do Processo\n";
+	std::cout << "Instrucao 'e' - Gestao da Producao\n";
+	std::cout << "Instrucao '1' - Limpar console Dados do Processo\n";
+	std::cout << "Instrucao '2' - Limpar console Gestao da Producao \n";
 	std::cout << "Instrucao 'esc' - Encerrar processos \n";
 }
 
 DWORD WINAPI ThreadTeclado() {
-	//system("cls");
+	system("cls");
 	GerarDashboard();
 
 	do {
 		instrucao = _getch();
-		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem);
+		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem,statusS,statusE);
 	} while (instrucao != ESC);
 
-	ReleaseSemaphore(hLista1Vazia, 100, NULL);
-	ReleaseSemaphore(hLista2Vazia, 200, NULL);
+
 
 	std::cout << "Thread Teclado terminando... \n";
 	_endthreadex(0);
@@ -452,7 +487,7 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hTemporizadorSup, INFINITE);
-			WaitForSingleObject(hLista1Mutex, 1000);
+			WaitForSingleObject(hLista1Mutex, 50);
 			WaitForSingleObject(hLista1Vazia, INFINITE);
 			leituraSupervisorio->LerMensagem();
 			ReleaseSemaphore(hLista1Cheia, 1, NULL);
@@ -477,7 +512,7 @@ DWORD WINAPI ThreadLeituraPCP() {
 		if (tipoEvento == 1) {
 			tempoDeLeitura = (rand() % 4001) + 1000;
 			WaitForSingleObject(hTemporizadorPCP, tempoDeLeitura);
-			WaitForSingleObject(hLista1Mutex, 1000);
+			WaitForSingleObject(hLista1Mutex, 50);
 			WaitForSingleObject(hLista1Vazia, INFINITE);
 			leituraPCP->LerMensagem();
 			ReleaseSemaphore(hLista1Cheia, 1, NULL);
@@ -509,7 +544,7 @@ DWORD WINAPI ThreadRetirarMensagem() {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 		if (tipoEvento == 1) {
-			WaitForSingleObject(hLista1Mutex, 1000);
+			WaitForSingleObject(hLista1Mutex, 50);
 			WaitForSingleObject(hLista1Cheia, INFINITE);
 			SetConsoleTextAttribute(hOut, WHITE);
 			mensagem = retirarMensagem->RetiraMensagem();
@@ -527,11 +562,9 @@ DWORD WINAPI ThreadRetirarMensagem() {
 			}
 			else {
 				strcpy_s(mensagemParaDadosProcesso, mensagem.c_str());
-				WaitForSingleObject(hLista2Mutex, 1000);
+				WaitForSingleObject(hLista2Mutex, 50);
 				WaitForSingleObject(hLista2Vazia, INFINITE);
-				//lista2->Inserir(mensagem);
 
-				printf("mensagem sendo escrita inferno -> %s\n", mensagemParaDadosProcesso);
 
 				WriteFile(hFileLista2, mensagemParaDadosProcesso,
 					szMensagemParaDadosProcesso,
@@ -539,7 +572,7 @@ DWORD WINAPI ThreadRetirarMensagem() {
 					NULL);
 				numeroDeMensagensDadosProcesso++;
 				
-				if (numeroDeMensagensDadosProcesso < 100) {
+				if (numeroDeMensagensDadosProcesso < 200) {
 					dwFilePointerPos = numeroDeMensagensDadosProcesso * szMensagemParaDadosProcesso;
 					SetFilePointer(hFileLista2, dwFilePointerPos, NULL, FILE_BEGIN);
 					
@@ -549,9 +582,6 @@ DWORD WINAPI ThreadRetirarMensagem() {
 					numeroDeMensagensDadosProcesso = 0;
 				}
 
-
-
-				std::cout << "Adicionando na segunda lista: " << mensagem << endl;
 				ReleaseSemaphore(hLista2Cheia, 1, NULL);
 				ReleaseSemaphore(hLista2Mutex, 1, NULL);
 			}
