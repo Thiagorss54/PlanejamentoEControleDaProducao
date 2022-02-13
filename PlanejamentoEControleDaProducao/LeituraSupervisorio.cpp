@@ -12,7 +12,6 @@
 #define NSEQ_MAX 99999
 
 LeituraSupervisorio::LeituraSupervisorio(ListaEncadeada* listaEncadeada_) :listaEncadeada(listaEncadeada_) {
-	//srand(time(NULL));
 	status = false;
 	nseq = 1;
 }
@@ -26,16 +25,16 @@ bool LeituraSupervisorio::GetStatus() {
 }
 
 void LeituraSupervisorio::LerMensagem() {
-
 	std::stringstream mensagem;
 
-	mensagem << TIPO << "#" << FuncoesAuxiliares::Formatar(nseq, 5)
-		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
-		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
-		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
-		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
-		<< "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
-		<< "#" << FuncoesAuxiliares::GetHorario();
+	mensagem << TIPO 
+			 << "#" << FuncoesAuxiliares::Formatar(nseq, 5)
+			 << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+			 << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+			 << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+			 << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+			 << "#" << FuncoesAuxiliares::Formatar(FuncoesAuxiliares::ValorAleatorio(999.9f), 5)
+			 << "#" << FuncoesAuxiliares::GetHorario();
 
 	listaEncadeada->Inserir(mensagem.str());
 

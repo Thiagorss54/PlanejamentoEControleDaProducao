@@ -11,11 +11,11 @@ typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sex
 													// _beginthreadex
 typedef unsigned* CAST_LPDWORD;
 
+// Criando Handles
 HANDLE hEventProcesso;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProcesso;
 HANDLE hFileLista2;
-
 
 //Semaforos
 HANDLE hLista2Mutex;
@@ -24,6 +24,7 @@ HANDLE hLista2Cheia;
 
 void ImprimirMensagem(std::string buffer);
 
+// Declarando funções
 DWORD WINAPI ThreadLimparConsole();
 DWORD WINAPI ThreadReceberMensagens();
 
@@ -33,9 +34,11 @@ int main()
 {
 	SetConsoleTitle(L"Dados do Processo");
 
+	// Abertura de eventos
 	hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
 
+	// Abertura de semaforos
 	hLista2Mutex = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Mutex");
 	hLista2Vazia = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Vazia");
 	hLista2Cheia = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Cheia");
@@ -64,7 +67,6 @@ int main()
 	}
 	//Thread LimparConsole
 
-
 	HANDLE hThreads[2];
 	DWORD dwIdLimparConsole;
 
@@ -75,7 +77,6 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
-	//CheckForError(hThread);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread LimparConsole criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -83,6 +84,7 @@ int main()
 		exit(0);
 	}
 
+	// Thread Receber Mensagens
 	hThreads[1] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
@@ -90,7 +92,6 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
-	//CheckForError(hThread);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread ReceberMensagens criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -98,29 +99,30 @@ int main()
 		exit(0);
 	}
 
-
-
 	system("cls");
-	WaitForSingleObject(hEventEsc, INFINITE);
 
+	// Aguarda o comando ESC
+	WaitForSingleObject(hEventEsc, INFINITE);
 
 	//esperar a thread acabar
 	WaitForMultipleObjects(2, hThreads, TRUE, INFINITE);
 
-
+	// Fecha todos os handles
 	for (int i = 0; i < 2; ++i) {
 		CloseHandle(hThreads[i]);
 	}
 
+	CloseHandle(hEventEsc);
 	CloseHandle(hEventProcesso);
 	CloseHandle(hPipeNotificacaoProcesso);
 	CloseHandle(hFileLista2);
-
+	CloseHandle(hLista2Mutex);
+	CloseHandle(hLista2Vazia);
+	CloseHandle(hLista2Cheia);
 }
 
 DWORD WINAPI ThreadLimparConsole()
 {
-
 	bool result;
 	do {
 		ReadFile(hPipeNotificacaoProcesso,
@@ -137,19 +139,18 @@ DWORD WINAPI ThreadLimparConsole()
 
 	std::cout << "Thread LimparConsole terminando ...\n";
 	_endthreadex(0);
-
 	return 0;
 }
 
 DWORD WINAPI ThreadReceberMensagens() {
-
 	HANDLE Events[2] = { hEventEsc, hEventProcesso };
-	DWORD ret;
-	int tipoEvento;
 	char buffer[51] = "";
+	DWORD ret;
 	DWORD szBuffer = sizeof(buffer);
 	DWORD dwNoBytesRead;
+	int tipoEvento;
 	int numeroDeMensagensDadosProcesso = 0;
+
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
@@ -174,19 +175,23 @@ DWORD WINAPI ThreadReceberMensagens() {
 			ReleaseSemaphore(hLista2Vazia, 1, NULL);
 			ReleaseSemaphore(hLista2Mutex, 1, NULL);
 		}
+	} while (tipoEvento == 1);
+	std::cout << "Thread ReceberMensagem terminando ...\n";
+	_endthreadex(0);
+	return 0;
+}
 
-		} while (tipoEvento == 1);
-		std::cout << "Thread ReceberMensagem terminando ...\n";
-		_endthreadex(0);
-		return 0;
+void ImprimirMensagem(std::string buffer) {
+	std::vector<std::string> msg;
+	msg = FuncoesAuxiliares::SepararString(buffer, "#");
+	if (msg.size() != 8) {
+		return;
 	}
-
-	void ImprimirMensagem(std::string buffer) {
-		std::vector<std::string> msg;
-		msg = FuncoesAuxiliares::SepararString(buffer, "#");
-		if (msg.size() != 8) {
-			return;
-		}
-		std::cout << "NSEQ: " << msg[1] << " TZ1: " << msg[2] << " TZ2: " << msg[3] << " TZ3: " << msg[4] << " VOL: " << msg[5] << " PRES: " << msg[6] << " HORA: " << msg[7] << std::endl;
-	}
-
+	std::cout << "NSEQ: " << msg[1] 
+			  << " TZ1: " << msg[2] 
+			  << " TZ2: " << msg[3] 
+			  << " TZ3: " << msg[4] 
+			  << " VOL: " << msg[5] 
+			  << " PRES: " << msg[6] 
+			  << " HORA: " << msg[7] << std::endl;
+}

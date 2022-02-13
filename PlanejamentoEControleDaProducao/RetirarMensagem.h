@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include "ListaEncadeada.h"
 
@@ -15,4 +16,3 @@ public:
 	bool GetStatus();
 	string RetiraMensagem();
 };
-

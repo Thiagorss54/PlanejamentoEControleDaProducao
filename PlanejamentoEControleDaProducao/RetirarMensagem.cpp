@@ -8,8 +8,6 @@
 #include <sstream>
 #include <windows.h>
 
-using namespace std;
-
 RetirarMensagem::RetirarMensagem(ListaEncadeada* listaEncadeada_): listaEncadeada(listaEncadeada_) {
 	status = false;
 }

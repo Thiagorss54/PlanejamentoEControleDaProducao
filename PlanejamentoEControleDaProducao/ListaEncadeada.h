@@ -1,13 +1,13 @@
 #pragma once
-#include <iostream>
+
 #include <string>
+
 using std::string;
 
 struct No {
 	No* proximo;
 	string msg;
 };
-
 
 class ListaEncadeada {
 private:
@@ -23,7 +23,5 @@ public:
 	bool Cheia();
 	bool Vazia();
 	void Print();
-
 	~ListaEncadeada();
-
 };

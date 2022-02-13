@@ -1,4 +1,5 @@
 #include "ListaEncadeada.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,6 +11,7 @@ ListaEncadeada::ListaEncadeada(int tamanhoMax_) :tamanhoMax(tamanhoMax_) {
     fim = nullptr;
     tamanho = 0;
 }
+
 void ListaEncadeada::Inserir(string valor) {
     if (Cheia()) {
         return;
@@ -18,14 +20,11 @@ void ListaEncadeada::Inserir(string valor) {
     No* novo = new No;
     novo->msg = valor;
     if (Vazia()) {
-
         inicio = novo;
         fim = novo;
         fim->proximo = inicio;
-
     }
     else {
-
         novo->proximo = inicio;
         fim->proximo = novo;
         fim = novo;
@@ -40,6 +39,7 @@ string ListaEncadeada::Remover() {
     if (Vazia()) {
         return "-1";
     }
+
     No* remover = new No;
     remover = inicio;
     if (tamanho == 1) {
@@ -54,9 +54,11 @@ string ListaEncadeada::Remover() {
     tamanho--;
     return v;
 }
+
 bool ListaEncadeada::Cheia() {
     return (tamanho == tamanhoMax);
 }
+
 bool ListaEncadeada::Vazia() {
     return (tamanho == 0);
 }
@@ -65,13 +67,14 @@ void ListaEncadeada::Print() {
     if (Vazia()) {
         return;
     }
+    
     No* i = inicio;
     do {
         std::cout << i->msg << std::endl;
         i = i->proximo;
     } while (i != fim->proximo);
-
 }
+
 ListaEncadeada::~ListaEncadeada() {
     while (!Vazia()) {
         Remover();
