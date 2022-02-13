@@ -39,20 +39,12 @@ int main()
 
 	// Abertura de eventos
 	hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
-	//CheckForError(hEventProcesso);
-
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
-	//CheckForError(hEventEsc);
 
 	// Abertura de semaforos
 	hLista2Mutex = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Mutex");
-	//CheckForError(hLista2Mutex);
-
 	hLista2Vazia = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Vazia");
-	//CheckForError(hLista2Vazia);
-
 	hLista2Cheia = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Cheia");
-	//CheckForError(hLista2Cheia);
 
 	//Pipe
 	hPipeNotificacaoProcesso = CreateFile(
@@ -63,7 +55,7 @@ int main()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
-	//CheckForError(hPipeNotificacaoProcesso);
+	CheckForError(hPipeNotificacaoProcesso);
 
 	//Abrindo o arquivo para a lista 2
 	hFileLista2 = CreateFile(L"..\\..\\FileDadosProcesso.txt",
@@ -73,7 +65,7 @@ int main()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
-	//CheckForError(hFileLista2);
+	CheckForError(hFileLista2);
 
 	if (hFileLista2 == INVALID_HANDLE_VALUE) {
 		std::cout << "ERROR -> " << GetLastError() << std::endl;
@@ -134,6 +126,7 @@ int main()
 	CloseHandle(hLista2Mutex);
 	CloseHandle(hLista2Vazia);
 	CloseHandle(hLista2Cheia);
+	system("PAUSE");
 }
 
 DWORD WINAPI ThreadLimparConsole()
