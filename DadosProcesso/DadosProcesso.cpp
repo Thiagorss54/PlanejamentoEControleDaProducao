@@ -156,8 +156,8 @@ DWORD WINAPI ThreadReceberMensagens() {
 		tipoEvento = ret - WAIT_OBJECT_0;
 
 		if (tipoEvento == 1) {
-			WaitForSingleObject(hLista2Mutex, 50);
 			WaitForSingleObject(hLista2Cheia, INFINITE);
+			WaitForSingleObject(hLista2Mutex, INFINITE);
 			ReadFile(hFileLista2,
 				buffer,
 				szBuffer,
@@ -172,8 +172,8 @@ DWORD WINAPI ThreadReceberMensagens() {
 			}
 			ImprimirMensagem(buffer);
 
-			ReleaseSemaphore(hLista2Vazia, 1, NULL);
 			ReleaseSemaphore(hLista2Mutex, 1, NULL);
+			ReleaseSemaphore(hLista2Vazia, 1, NULL);
 		}
 	} while (tipoEvento == 1);
 	std::cout << "Thread ReceberMensagem terminando ...\n";

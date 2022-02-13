@@ -234,7 +234,6 @@ int main()
 		0,
 		(CAST_LPDWORD)&dwIdTelcado);
 	CheckForError(hThreads[0]);
-	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread Teclado  %d criada com Id=%0x\n", 0, dwIdTelcado);
 	else {
@@ -251,7 +250,6 @@ int main()
 		0,
 		(CAST_LPDWORD)&dwIdSupervisorio);
 	CheckForError(hThreads[1]);
-	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread Leitura Supervisorio  %d criada com Id=%0x\n", 1, dwIdSupervisorio);
 	else {
@@ -268,7 +266,6 @@ int main()
 		0,
 		(CAST_LPDWORD)&dwIdPCP);
 	CheckForError(hThreads[2]);
-	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[2] != (HANDLE)-1L)
 		printf("Thread Leitura PCP  %d criada com Id=%0x\n", 2, dwIdPCP);
 	else {
@@ -285,7 +282,6 @@ int main()
 		0,
 		(CAST_LPDWORD)&dwIdRetiraMsg);
 	CheckForError(hThreads[3]);
-	SetConsoleTextAttribute(hOut, WHITE);
 	if (hThreads[3] != (HANDLE)-1L)
 		printf("Thread Retirada mensagem  %d criada com Id=%0x\n", 3, dwIdRetiraMsg);
 	else {
@@ -444,7 +440,7 @@ void ExecutarInstrucao(char instrucao,
 		//Notificar finalizacao por event
 		SetEvent(hEventEsc);
 
-		ReleaseSemaphore(hLista1Vazia, 1, NULL);
+		ReleaseSemaphore(hLista1Vazia, 2, NULL);
 		ReleaseSemaphore(hLista2Vazia, 1, NULL);
 		ReleaseSemaphore(hLista1Cheia, 1, NULL);
 		ReleaseSemaphore(hLista2Cheia, 1, NULL);
@@ -487,6 +483,7 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 	int tipoEvento;
 	LARGE_INTEGER time;
 	time.QuadPart = -0LL;
+	long bLista1Cheia;
 	SetWaitableTimer(hTemporizadorSup, &time, 500, NULL, NULL, FALSE);
 
 	do {
@@ -495,11 +492,15 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 
 		if (tipoEvento == 1) {
 			WaitForSingleObject(hTemporizadorSup, INFINITE);
-			WaitForSingleObject(hLista1Mutex, 50);
 			WaitForSingleObject(hLista1Vazia, INFINITE);
+			WaitForSingleObject(hLista1Mutex, INFINITE);
 			leituraSupervisorio->LerMensagem();
-			ReleaseSemaphore(hLista1Cheia, 1, NULL);
 			ReleaseSemaphore(hLista1Mutex, 1, NULL);
+			ReleaseSemaphore(hLista1Cheia, 1, &bLista1Cheia);
+			if (bLista1Cheia == 99) {
+				SetConsoleTextAttribute(hOut, HLRED);
+				std::cout << "ALERTA LISTA 1 CHEIA!" << std::endl;
+			}
 		}
 	} while (tipoEvento == 1);
 
@@ -512,6 +513,7 @@ DWORD WINAPI ThreadLeituraPCP() {
 	HANDLE Events[2] = { hEventEsc, hEventLPCP };
 	DWORD ret;
 	int tipoEvento, tempoDeLeitura;
+	long bLista1Cheia;
 
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
@@ -520,11 +522,15 @@ DWORD WINAPI ThreadLeituraPCP() {
 		if (tipoEvento == 1) {
 			tempoDeLeitura = (rand() % 4001) + 1000;
 			WaitForSingleObject(hTemporizadorPCP, tempoDeLeitura);
-			WaitForSingleObject(hLista1Mutex, 50);
 			WaitForSingleObject(hLista1Vazia, INFINITE);
+			WaitForSingleObject(hLista1Mutex, INFINITE);
 			leituraPCP->LerMensagem();
-			ReleaseSemaphore(hLista1Cheia, 1, NULL);
 			ReleaseSemaphore(hLista1Mutex, 1, NULL);
+			ReleaseSemaphore(hLista1Cheia, 1, &bLista1Cheia);
+			if (bLista1Cheia == 99) {
+				SetConsoleTextAttribute(hOut, HLRED);
+				std::cout << "ALERTA LISTA 1 CHEIA!" << std::endl;
+			}
 		}
 	} while (tipoEvento == 1);
 
@@ -544,17 +550,21 @@ DWORD WINAPI ThreadRetirarMensagem() {
 	DWORD dwNoBytesWrite;
 	DWORD dwFilePointerPos;
 	int numeroDeMensagensDadosProcesso = 0;
+	long bLista2Cheia;
+
+
+	
 
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
 		tipoEvento = ret - WAIT_OBJECT_0;
 		if (tipoEvento == 1) {
-			WaitForSingleObject(hLista1Mutex, 50);
+			
 			WaitForSingleObject(hLista1Cheia, INFINITE);
-			SetConsoleTextAttribute(hOut, WHITE);
+			WaitForSingleObject(hLista1Mutex, INFINITE);
 			mensagem = retirarMensagem->RetiraMensagem();
-			ReleaseSemaphore(hLista1Vazia, 1, NULL);
 			ReleaseSemaphore(hLista1Mutex, 1, NULL);
+			ReleaseSemaphore(hLista1Vazia, 1, NULL);
 
 			if (mensagem[0] == '0') {
 				//enviar para Gestão de producao PIPE
@@ -567,8 +577,8 @@ DWORD WINAPI ThreadRetirarMensagem() {
 			}
 			else {
 				strcpy_s(mensagemParaDadosProcesso, mensagem.c_str());
-				WaitForSingleObject(hLista2Mutex, 50);
 				WaitForSingleObject(hLista2Vazia, INFINITE);
+				WaitForSingleObject(hLista2Mutex, INFINITE);
 
 				WriteFile(hFileLista2, mensagemParaDadosProcesso,
 					szMensagemParaDadosProcesso,
@@ -585,8 +595,12 @@ DWORD WINAPI ThreadRetirarMensagem() {
 					numeroDeMensagensDadosProcesso = 0;
 				}
 
-				ReleaseSemaphore(hLista2Cheia, 1, NULL);
 				ReleaseSemaphore(hLista2Mutex, 1, NULL);
+				ReleaseSemaphore(hLista2Cheia, 1, &bLista2Cheia);
+				if (bLista2Cheia == 199) {
+					SetConsoleTextAttribute(hOut, HLRED);
+					std::cout << "ALERTA LISTA 2 CHEIA!" << std::endl;
+				}
 			}
 		}
 	} while (tipoEvento == 1);
