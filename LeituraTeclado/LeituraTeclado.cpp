@@ -85,6 +85,7 @@ int main()
 		sizeof(bool),
 		NMPWAIT_USE_DEFAULT_WAIT,
 		NULL);
+	CheckForError(hPipeNotificacaoProcesso);
 
 	hPipeNotificacaoProducao = CreateNamedPipe(
 		L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO",
@@ -95,6 +96,7 @@ int main()
 		sizeof(bool),
 		NMPWAIT_USE_DEFAULT_WAIT,
 		NULL);
+	CheckForError(hPipeNotificacaoProducao);
 
 	DWORD dwTamanhoBuffer = sizeof(buffer) * 10;
 	hPipeGestaoProducao = CreateNamedPipe(
@@ -106,6 +108,7 @@ int main()
 		dwTamanhoBuffer,
 		NMPWAIT_USE_DEFAULT_WAIT,
 		NULL);
+	CheckForError(hPipeGestaoProducao);
 
 	//Criando Arquivo para lista 2	
 	hFileLista2 = CreateFile(L"..\\FileDadosProcesso.txt",
@@ -292,6 +295,7 @@ int main()
 	// Aguarda término das threads 
 	dwRet = WaitForMultipleObjects(4, hThreads, TRUE, INFINITE);
 	CheckForError(dwRet == WAIT_OBJECT_0);
+	SetConsoleTextAttribute(hOut, WHITE);
 
 	//Desconectando Pipe
 	DisconnectNamedPipe(hPipeGestaoProducao);
@@ -472,6 +476,7 @@ DWORD WINAPI ThreadTeclado() {
 		ExecutarInstrucao(instrucao, leituraSupervisorio, leituraPCP, retirarMensagem, statusS, statusE);
 	} while (instrucao != ESC);
 
+	SetConsoleTextAttribute(hOut, WHITE);
 	std::cout << "Thread Teclado terminando... \n";
 	_endthreadex(0);
 	return 0;
@@ -504,6 +509,7 @@ DWORD WINAPI ThreadLeituraSupervisorio() {
 		}
 	} while (tipoEvento == 1);
 
+	SetConsoleTextAttribute(hOut, WHITE);
 	std::cout << "Thread Leitura Supervisorio terminando... \n";
 	_endthreadex(0);
 	return 0;
@@ -534,6 +540,7 @@ DWORD WINAPI ThreadLeituraPCP() {
 		}
 	} while (tipoEvento == 1);
 
+	SetConsoleTextAttribute(hOut, WHITE);
 	std::cout << "Thread Leitura PCP terminando... \n";
 	_endthreadex(0);
 	return 0;
@@ -551,9 +558,6 @@ DWORD WINAPI ThreadRetirarMensagem() {
 	DWORD dwFilePointerPos;
 	int numeroDeMensagensDadosProcesso = 0;
 	long bLista2Cheia;
-
-
-	
 
 	do {
 		ret = WaitForMultipleObjects(2, Events, FALSE, INFINITE);
@@ -605,6 +609,7 @@ DWORD WINAPI ThreadRetirarMensagem() {
 		}
 	} while (tipoEvento == 1);
 
+	SetConsoleTextAttribute(hOut, WHITE);
 	std::cout << "Thread RetirarMensagem terminando... \n";
 	_endthreadex(0);
 	return 0;

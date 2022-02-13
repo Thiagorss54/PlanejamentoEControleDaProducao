@@ -36,10 +36,16 @@ int main() {
 
 	// Abrindo eventos
 	hEventGestao = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoGestao");
-	//CheckForError(hEventGestao);
+	CheckForError(hEventGestao);
+	
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
+	CheckForError(hEventEsc);
+	
 	hEventGestaoProducaoSent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoSent");
+	CheckForError(hEventGestaoProducaoSent);
+	
 	hEventGestaoProducaoRead = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoRead");
+	CheckForError(hEventGestaoProducaoRead);
 
 	// Pipe
 	WaitNamedPipe(L"\\\\.\\pipe\\GESTAO", NMPWAIT_WAIT_FOREVER);
@@ -53,6 +59,7 @@ int main() {
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
+	CheckForError(hPipeNotificacaoProducao);
 
 	hPipeGestaoProducao = CreateFile(
 		L"\\\\.\\pipe\\GESTAO",
@@ -62,6 +69,7 @@ int main() {
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
+	CheckForError(hPipeGestaoProducao);
 
 	HANDLE hThreads[2];
 	DWORD dwIdLimparConsole;
@@ -74,6 +82,7 @@ int main() {
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
+	CheckForError(hThreads[0]);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread LimparConsole criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -89,7 +98,7 @@ int main() {
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
-	//CheckForError(hThreads[1]);
+	CheckForError(hThreads[1]);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread ReceberMensagens criada com Id=%0x\n", dwIdLimparConsole);
 	else {

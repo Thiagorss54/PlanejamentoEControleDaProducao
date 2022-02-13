@@ -5,6 +5,9 @@
 #include <process.h>
 #include <vector>
 
+#define _CHECKERROR 1
+#include "CheckForError.h"
+
 #include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
@@ -36,12 +39,20 @@ int main()
 
 	// Abertura de eventos
 	hEventProcesso = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoProcesso");
+	//CheckForError(hEventProcesso);
+
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
+	//CheckForError(hEventEsc);
 
 	// Abertura de semaforos
 	hLista2Mutex = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Mutex");
+	//CheckForError(hLista2Mutex);
+
 	hLista2Vazia = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Vazia");
+	//CheckForError(hLista2Vazia);
+
 	hLista2Cheia = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"Lista2Cheia");
+	//CheckForError(hLista2Cheia);
 
 	//Pipe
 	hPipeNotificacaoProcesso = CreateFile(
@@ -52,6 +63,7 @@ int main()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
+	//CheckForError(hPipeNotificacaoProcesso);
 
 	//Abrindo o arquivo para a lista 2
 	hFileLista2 = CreateFile(L"..\\..\\FileDadosProcesso.txt",
@@ -61,6 +73,7 @@ int main()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
+	//CheckForError(hFileLista2);
 
 	if (hFileLista2 == INVALID_HANDLE_VALUE) {
 		std::cout << "ERROR -> " << GetLastError() << std::endl;
@@ -77,6 +90,7 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
+	//CheckForError(hThreads[0]);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread LimparConsole criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -92,6 +106,7 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
+	//CheckForError(hThreads[1]);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread ReceberMensagens criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -187,11 +202,11 @@ void ImprimirMensagem(std::string buffer) {
 	if (msg.size() != 8) {
 		return;
 	}
-	std::cout << "NSEQ: " << msg[1] 
-			  << " TZ1: " << msg[2] 
-			  << " TZ2: " << msg[3] 
-			  << " TZ3: " << msg[4] 
-			  << " VOL: " << msg[5] 
-			  << " PRES: " << msg[6] 
-			  << " HORA: " << msg[7] << std::endl;
+	std::cout << "NSEQ: " << msg[1]
+		<< " TZ1: " << msg[2]
+		<< " TZ2: " << msg[3]
+		<< " TZ3: " << msg[4]
+		<< " VOL: " << msg[5]
+		<< " PRES: " << msg[6]
+		<< " HORA: " << msg[7] << std::endl;
 }
