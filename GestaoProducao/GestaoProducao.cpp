@@ -7,7 +7,7 @@
 #include <string>
 
 #define _CHECKERROR 1
-#include "../GestaoProducao/CheckForError.h"
+#include "CheckForError.h"
 
 #include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
@@ -36,7 +36,7 @@ int main() {
 
 	// Abrindo eventos
 	hEventGestao = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoGestao");
-	CheckForError(hEventGestao);
+	//CheckForError(hEventGestao);
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
 	hEventGestaoProducaoSent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoSent");
 	hEventGestaoProducaoRead = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoRead");
