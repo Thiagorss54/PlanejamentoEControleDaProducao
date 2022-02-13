@@ -30,9 +30,6 @@ void ListaEncadeada::Inserir(string valor) {
         fim = novo;
     }
     tamanho++;
-    if (Cheia()) {
-        std::cout << "LISTA CHEIA!\n" ;
-    }
 }
 
 string ListaEncadeada::Remover() {
