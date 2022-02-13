@@ -5,6 +5,9 @@
 #include <process.h>
 #include <vector>
 
+#define _CHECKERROR 1
+#include "CheckForError.h"
+
 #include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
@@ -52,6 +55,7 @@ int main()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
+	CheckForError(hPipeNotificacaoProcesso);
 
 	//Abrindo o arquivo para a lista 2
 	hFileLista2 = CreateFile(L"..\\..\\FileDadosProcesso.txt",
@@ -61,6 +65,7 @@ int main()
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
+	CheckForError(hFileLista2);
 
 	if (hFileLista2 == INVALID_HANDLE_VALUE) {
 		std::cout << "ERROR -> " << GetLastError() << std::endl;
@@ -77,6 +82,7 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
+	//CheckForError(hThreads[0]);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread LimparConsole criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -92,6 +98,7 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
+	//CheckForError(hThreads[1]);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread ReceberMensagens criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -119,6 +126,7 @@ int main()
 	CloseHandle(hLista2Mutex);
 	CloseHandle(hLista2Vazia);
 	CloseHandle(hLista2Cheia);
+	system("PAUSE");
 }
 
 DWORD WINAPI ThreadLimparConsole()
@@ -187,11 +195,11 @@ void ImprimirMensagem(std::string buffer) {
 	if (msg.size() != 8) {
 		return;
 	}
-	std::cout << "NSEQ: " << msg[1] 
-			  << " TZ1: " << msg[2] 
-			  << " TZ2: " << msg[3] 
-			  << " TZ3: " << msg[4] 
-			  << " VOL: " << msg[5] 
-			  << " PRES: " << msg[6] 
-			  << " HORA: " << msg[7] << std::endl;
+	std::cout << "NSEQ: " << msg[1]
+		<< " TZ1: " << msg[2]
+		<< " TZ2: " << msg[3]
+		<< " TZ3: " << msg[4]
+		<< " VOL: " << msg[5]
+		<< " PRES: " << msg[6]
+		<< " HORA: " << msg[7] << std::endl;
 }
