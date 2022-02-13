@@ -8,40 +8,43 @@
 
 #define _CHECKERROR 1
 #include "../GestaoProducao/CheckForError.h"
+
 #include "../PlanejamentoEControleDaProducao/FuncoesAuxiliares.h"
 
 typedef unsigned (WINAPI* CAST_FUNCTION)(LPVOID);	// Casting para terceiro e sexto parâmetros da função
 													// _beginthreadex
 typedef unsigned* CAST_LPDWORD;
 
-void ImprimirMensagem(std::string buffer);
-
+// Criando handles
 HANDLE hEventGestao;
 HANDLE hEventEsc;
 HANDLE hPipeNotificacaoProducao, hPipeGestaoProducao;
 HANDLE hEventGestaoProducaoSent, hEventGestaoProducaoRead;
 
+// Declarando threads
 DWORD WINAPI ThreadLimparConsole();
 DWORD WINAPI ThreadReceberMensagens();
 
-
-
+// Declarando variáveis globais
 bool status = FALSE;
 
-int main()
-{
+// Declarando funções
+void ImprimirMensagem(std::string buffer);
+
+int main() {
 	SetConsoleTitle(L"Gestao da Producao");
 
+	// Abrindo eventos
 	hEventGestao = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoGestao");
+	CheckForError(hEventGestao);
 	hEventEsc = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"EventoEsc");
 	hEventGestaoProducaoSent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoSent");
 	hEventGestaoProducaoRead = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"GestaoProducaoRead");
 
-
-	WaitNamedPipe(L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO", NMPWAIT_WAIT_FOREVER);
+	// Pipe
 	WaitNamedPipe(L"\\\\.\\pipe\\GESTAO", NMPWAIT_WAIT_FOREVER);
+	WaitNamedPipe(L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO", NMPWAIT_WAIT_FOREVER);
 
-	//Pipe
 	hPipeNotificacaoProducao = CreateFile(
 		L"\\\\.\\pipe\\NOTIFICACAOPRODUCAO",
 		GENERIC_READ | GENERIC_WRITE,
@@ -60,13 +63,10 @@ int main()
 		FILE_ATTRIBUTE_NORMAL,
 		NULL);
 
-
-	//Thread LimparConsole
-
-
 	HANDLE hThreads[2];
 	DWORD dwIdLimparConsole;
 
+	//Thread LimparConsole
 	hThreads[0] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
@@ -74,7 +74,6 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
-	//CheckForError(hThread);
 	if (hThreads[0] != (HANDLE)-1L)
 		printf("Thread LimparConsole criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -82,6 +81,7 @@ int main()
 		exit(0);
 	}
 
+	// Thread Receber Mensagens
 	hThreads[1] = (HANDLE)_beginthreadex(
 		NULL,
 		0,
@@ -89,7 +89,7 @@ int main()
 		(LPVOID)(INT_PTR)0,
 		0,
 		(CAST_LPDWORD)&dwIdLimparConsole);
-	//CheckForError(hThread);
+	//CheckForError(hThreads[1]);
 	if (hThreads[1] != (HANDLE)-1L)
 		printf("Thread ReceberMensagens criada com Id=%0x\n", dwIdLimparConsole);
 	else {
@@ -98,24 +98,27 @@ int main()
 	}
 
 	system("cls");
+
+	// Aguarda comando ESC
 	WaitForSingleObject(hEventEsc, INFINITE);
 
-	//esperar a thread acabar
+	// Esperar as threads acabar
 	WaitForMultipleObjects(2, hThreads, TRUE, INFINITE);
 
-
-
+	// Fechando Handles
 	for (int i = 0; i < 2; ++i) {
 		CloseHandle(hThreads[i]);
 	}
 
-	CloseHandle(hPipeNotificacaoProducao);
 	CloseHandle(hEventGestao);
+	CloseHandle(hEventEsc);
+	CloseHandle(hPipeNotificacaoProducao);
 	CloseHandle(hPipeGestaoProducao);
+	CloseHandle(hEventGestaoProducaoSent);
+	CloseHandle(hEventGestaoProducaoRead);
 }
 
-DWORD WINAPI ThreadLimparConsole()
-{
+DWORD WINAPI ThreadLimparConsole() {
 	bool result;
 	do {
 		ReadFile(hPipeNotificacaoProducao,
@@ -132,7 +135,6 @@ DWORD WINAPI ThreadLimparConsole()
 
 	std::cout << "Thread LimparConsole terminando ...\n";
 	_endthreadex(0);
-
 	return 0;
 }
 
@@ -148,8 +150,6 @@ DWORD WINAPI ThreadReceberMensagens() {
 		tipoEvento = ret - WAIT_OBJECT_0;
 
 		if (tipoEvento == 1) {
-			//WaitForSingleObject(hEventGestaoProducaoSent, INFINITE);
-			//ResetEvent(hEventGestaoProducaoSent);
 			ReadFile(hPipeGestaoProducao,
 				buffer,
 				szBuffer,
@@ -157,10 +157,9 @@ DWORD WINAPI ThreadReceberMensagens() {
 				NULL);
 
 			ImprimirMensagem(buffer);
-			//std::cout << buffer << std::endl;
-			//SetEvent(hEventGestaoProducaoRead);
 		}
 	} while (tipoEvento == 1);
+
 	std::cout << "Thread ReceberMensagem terminando ...\n";
 	_endthreadex(0);
 	return 0;
@@ -172,5 +171,9 @@ void ImprimirMensagem(std::string buffer) {
 	if (msg.size() != 5) {
 		return;
 	}
-	std::cout << "NSEQ: " << msg[1] << " OP: " << msg[2] << " HORA DE INICIO: " << msg[3] << " DURACAO: " << msg[4] << std::endl;
+	std::cout << "NSEQ: " << msg[1] 
+			  << " OP: " << msg[2]
+			  << " HORA DE INICIO: " << msg[3]
+			  << " DURACAO: " << msg[4] 
+			  << std::endl;
 }

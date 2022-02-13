@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include "ListaEncadeada.h"
 
@@ -12,7 +13,6 @@ struct Mensagem
 	float volume;
 	float pressao;
 	char  timestamp[13];
-
 };
 class LeituraSupervisorio {
 private:
@@ -24,8 +24,5 @@ public:
 	LeituraSupervisorio(ListaEncadeada* listaEncadeada_);
 	void AlterarStatus();
 	bool GetStatus();
-	void LerMensagem(); //simula a leitura através da geração de dados	
-
+	void LerMensagem(); 
 };
-
-

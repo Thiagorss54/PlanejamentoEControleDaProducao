@@ -143,7 +143,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LeituraTeclado\CheckForError.h" />
-    <ClInclude Include="GestaoProducao.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PlanejamentoEControleDaProducao\PlanejamentoEControleDaProducao.vcxproj">
